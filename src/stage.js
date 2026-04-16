@@ -1,4 +1,4 @@
-import { SmallEnemy, MediumEnemy, Boss } from './enemy.js';
+import { SmallEnemy, MediumEnemy, Boss } from './enemies/index.js';
 
 const CANVAS_W = 480;
 const CANVAS_H = 640;
