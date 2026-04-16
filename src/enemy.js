@@ -18,18 +18,16 @@ export class SmallEnemy {
     this.dead = false;
     this.score = 100;
     this.shootTimer = Math.floor(Math.random() * 80) + 60;
-    this.angle = 0;
   }
 
-  update(bullets) {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.angle += 0.05;
+  update(bullets, dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
 
     if (this.x < 20 || this.x > CANVAS_W - 20) this.vx *= -1;
     if (this.y > CANVAS_H + 40) this.dead = true;
 
-    this.shootTimer--;
+    this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
       bullets.push(new Bullet(this.x, this.y + this.height / 2, 0, 5, false));
       this.shootTimer = 90;
@@ -48,7 +46,7 @@ export class SmallEnemy {
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
-    ctx.rotate(Math.PI); // facing down
+    ctx.rotate(Math.PI);
 
     ctx.shadowColor = '#f80';
     ctx.shadowBlur = 10;
@@ -85,25 +83,25 @@ export class MediumEnemy {
     this.baseX = x;
     this.vy = 0.8;
     this.shootTimer = 60;
-    this.phase = 0; // 0 = entering, 1 = active
+    this.phase = 0;
   }
 
-  update(bullets) {
-    this.t++;
+  update(bullets, dt) {
+    this.t += dt;
+
     if (this.y < 120) {
-      this.y += this.vy;
+      this.y += this.vy * dt;
     } else {
       this.phase = 1;
       this.x = this.baseX + Math.sin(this.t * 0.03) * 80;
-      this.y += Math.sin(this.t * 0.05) * 0.5;
+      this.y += Math.sin(this.t * 0.05) * 0.5 * dt;
     }
 
     if (this.y > CANVAS_H + 60) this.dead = true;
 
     if (this.phase === 1) {
-      this.shootTimer--;
+      this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
-        // Aimed 3-way shot
         for (let a = -0.3; a <= 0.31; a += 0.3) {
           bullets.push(new Bullet(this.x, this.y + this.height / 2,
             Math.sin(a) * 4, Math.cos(a) * 4, false));
@@ -129,7 +127,6 @@ export class MediumEnemy {
     ctx.shadowColor = '#a0f';
     ctx.shadowBlur = 14;
 
-    // Body hexagon
     ctx.fillStyle = '#84c';
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
@@ -146,7 +143,6 @@ export class MediumEnemy {
     ctx.arc(0, 0, 10, 0, Math.PI * 2);
     ctx.fill();
 
-    // HP bar
     const bw = this.width;
     const ratio = this.hp / this.maxHp;
     ctx.fillStyle = '#333';
@@ -177,23 +173,21 @@ export class Boss {
     this.angle = 0;
   }
 
-  update(bullets) {
-    this.t++;
-    this.angle += 0.02;
+  update(bullets, dt) {
+    this.t += dt;
+    this.angle += 0.02 * dt;
 
-    // Enter
     if (this.y < this.targetY) {
-      this.y += this.vy;
+      this.y += this.vy * dt;
       return;
     }
 
     this.phase = this.hp < this.maxHp / 2 ? 2 : 1;
     this.x = CANVAS_W / 2 + Math.sin(this.t * 0.02) * 130;
 
-    this.shootTimer--;
+    this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
       if (this.phase === 1) {
-        // Circular burst
         const count = 10;
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2;
@@ -201,7 +195,6 @@ export class Boss {
         }
         this.shootTimer = 80;
       } else {
-        // Phase 2: double burst
         const count = 16;
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2 + this.angle;
@@ -229,13 +222,11 @@ export class Boss {
     ctx.shadowColor = this.phase === 2 ? '#f00' : '#f60';
     ctx.shadowBlur = 24 * pulse;
 
-    // Main body
     ctx.fillStyle = this.phase === 2 ? '#c22' : '#c62';
     ctx.beginPath();
     ctx.ellipse(0, 0, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Wings
     ctx.fillStyle = '#a44';
     ctx.beginPath();
     ctx.moveTo(-this.width / 2, 0);
@@ -250,7 +241,6 @@ export class Boss {
     ctx.closePath();
     ctx.fill();
 
-    // Core
     ctx.fillStyle = `hsl(${this.t * 4 % 360}, 100%, 70%)`;
     ctx.beginPath();
     ctx.arc(0, 0, 18, 0, Math.PI * 2);
@@ -258,7 +248,7 @@ export class Boss {
 
     ctx.restore();
 
-    // Boss HP bar (top of screen)
+    // Boss HP bar
     ctx.save();
     const barW = CANVAS_W - 40;
     const ratio = this.hp / this.maxHp;

@@ -13,8 +13,8 @@ class Star {
     this.speed = this.size * 0.8 + 0.4;
     this.alpha = Math.random() * 0.6 + 0.4;
   }
-  update() {
-    this.y += this.speed;
+  update(dt) {
+    this.y += this.speed * dt;
     if (this.y > CANVAS_H + 2) this.reset();
   }
   draw(ctx) {
@@ -34,9 +34,9 @@ export class PowerUp {
     this.dead = false;
     this.t = 0;
   }
-  update() {
-    this.y += this.vy;
-    this.t++;
+  update(dt) {
+    this.y += this.vy * dt;
+    this.t += dt;
     if (this.y > CANVAS_H + 20) this.dead = true;
   }
   getBounds() { return { x: this.x - 10, y: this.y - 10, w: 20, h: 20 }; }
@@ -59,25 +59,19 @@ export class PowerUp {
 }
 
 // ─── Wave definitions ─────────────────────────────────────────────────────────
-// Each entry: { frame, type, x, y }
+// Frame counts are in 60fps-equivalent units (dt-accumulated)
 function buildWaves() {
   const waves = [];
   const add = (frame, type, x, y) => waves.push({ frame, type, x, y });
 
-  // Wave 1 – small enemies from top
   for (let i = 0; i < 6; i++) add(60 + i * 30, 'small', 60 + i * 70, -30);
-  // Wave 2
   for (let i = 0; i < 6; i++) add(300 + i * 25, 'small', 80 + i * 60, -30);
-  // Wave 3 – medium
   add(500, 'medium', 160, -50);
   add(560, 'medium', 320, -50);
-  // Wave 4 – mixed
   for (let i = 0; i < 8; i++) add(700 + i * 20, 'small', 40 + i * 55, -30);
   add(850, 'medium', 240, -50);
-  // Wave 5 – 2 mediums
   add(1000, 'medium', 120, -50);
   add(1060, 'medium', 360, -50);
-  // Boss
   add(1300, 'boss', 240, -90);
 
   return waves.sort((a, b) => a.frame - b.frame);
@@ -89,21 +83,19 @@ export class Stage {
     this.stars = Array.from({ length: 120 }, () => new Star());
     this.enemies = [];
     this.powerUps = [];
-    this.frame = 0;
+    this.frame = 0; // accumulated in dt units, equivalent to 60fps frame count
     this.waves = buildWaves();
     this.waveIdx = 0;
     this.bossSpawned = false;
-    this.bossDefeated = false;
     this.cleared = false;
   }
 
-  update(bullets, spawnExplosion, particles) {
-    this.frame++;
+  update(bullets, spawnExplosion, particles, dt) {
+    this.frame += dt;
 
-    // Stars
-    for (const s of this.stars) s.update();
+    for (const s of this.stars) s.update(dt);
 
-    // Spawn enemies from wave list
+    // Spawn enemies
     while (this.waveIdx < this.waves.length && this.waves[this.waveIdx].frame <= this.frame) {
       const w = this.waves[this.waveIdx++];
       if (w.type === 'small')  this.enemies.push(new SmallEnemy(w.x, w.y));
@@ -111,23 +103,19 @@ export class Stage {
       if (w.type === 'boss')   { this.enemies.push(new Boss()); this.bossSpawned = true; }
     }
 
-    // Update enemies
     for (const e of this.enemies) {
-      e.update(bullets);
-      if (e.dead && e.score !== undefined) {
+      e.update(bullets, dt);
+      if (e.dead) {
         spawnExplosion(particles, e.x, e.y, e instanceof Boss ? 60 : 20,
           e instanceof Boss ? '#f60' : '#fa0');
-        // Chance to drop power-up
         if (Math.random() < 0.2) this.powerUps.push(new PowerUp(e.x, e.y));
       }
     }
     this.enemies = this.enemies.filter(e => !e.dead);
 
-    // Update power-ups
-    for (const p of this.powerUps) p.update();
+    for (const p of this.powerUps) p.update(dt);
     this.powerUps = this.powerUps.filter(p => !p.dead);
 
-    // Stage clear: boss defeated
     if (this.bossSpawned && this.enemies.length === 0 && !this.cleared) {
       this.cleared = true;
     }

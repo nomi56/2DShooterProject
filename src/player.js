@@ -3,7 +3,7 @@ import { Bullet } from './bullet.js';
 const CANVAS_W = 480;
 const CANVAS_H = 640;
 const SPEED = 4;
-const SHOOT_INTERVAL = 12; // frames
+const SHOOT_INTERVAL = 12; // frames @ 60fps
 
 export class Player {
   constructor() {
@@ -12,7 +12,7 @@ export class Player {
     this.width = 32;
     this.height = 36;
     this.lives = 3;
-    this.invincible = 0; // invincibility frames after hit
+    this.invincible = 0;
     this.shootTimer = 0;
     this.powerLevel = 1; // 1–3
     this.dead = false;
@@ -54,18 +54,17 @@ export class Player {
       };
     });
     canvas.addEventListener('mousedown', () => { this.shooting = true; });
-    canvas.addEventListener('mouseup', () => { this.shooting = false; });
+    canvas.addEventListener('mouseup',   () => { this.shooting = false; });
     canvas.addEventListener('mouseleave', () => { this.mouse = null; });
 
     // Touch — swipe delta movement, auto-fire while touching
+    // Delta is applied directly in event handler (already frame-rate-independent)
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       const t = e.changedTouches[0];
       const rect = canvas.getBoundingClientRect();
-      const scaleX = CANVAS_W / rect.width;
-      const scaleY = CANVAS_H / rect.height;
-      this._lastTouchX = (t.clientX - rect.left) * scaleX;
-      this._lastTouchY = (t.clientY - rect.top)  * scaleY;
+      this._lastTouchX = (t.clientX - rect.left) * (CANVAS_W / rect.width);
+      this._lastTouchY = (t.clientY - rect.top)  * (CANVAS_H / rect.height);
       this._touchActive = true;
     }, { passive: false });
 
@@ -73,45 +72,38 @@ export class Player {
       e.preventDefault();
       const t = e.changedTouches[0];
       const rect = canvas.getBoundingClientRect();
-      const scaleX = CANVAS_W / rect.width;
-      const scaleY = CANVAS_H / rect.height;
-      const cx = (t.clientX - rect.left) * scaleX;
-      const cy = (t.clientY - rect.top)  * scaleY;
+      const cx = (t.clientX - rect.left) * (CANVAS_W / rect.width);
+      const cy = (t.clientY - rect.top)  * (CANVAS_H / rect.height);
       this.x += cx - this._lastTouchX;
       this.y += cy - this._lastTouchY;
       this._lastTouchX = cx;
       this._lastTouchY = cy;
     }, { passive: false });
 
-    const endTouch = (e) => {
-      e.preventDefault();
-      this._touchActive = false;
-    };
+    const endTouch = (e) => { e.preventDefault(); this._touchActive = false; };
     canvas.addEventListener('touchend',    endTouch, { passive: false });
     canvas.addEventListener('touchcancel', endTouch, { passive: false });
   }
 
-  update(bullets) {
-    // Touch: delta-move already applied in event; just clamp and auto-fire
+  update(bullets, dt) {
     if (this._touchActive) {
+      // Delta already applied in touchmove event; just auto-fire
       this.shooting = true;
     } else if (this.mouse) {
-      // Mouse follow
       const dx = this.mouse.x - this.x;
       const dy = this.mouse.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist > 2) {
-        const spd = Math.min(SPEED * 2, dist);
+        const spd = Math.min(SPEED * 2, dist) * dt;
         this.x += (dx / dist) * spd;
         this.y += (dy / dist) * spd;
       }
     } else {
       // Keyboard
-      if (this.keys['ArrowLeft']  || this.keys['KeyA']) this.x -= SPEED;
-      if (this.keys['ArrowRight'] || this.keys['KeyD']) this.x += SPEED;
-      if (this.keys['ArrowUp']    || this.keys['KeyW']) this.y -= SPEED;
-      if (this.keys['ArrowDown']  || this.keys['KeyS']) this.y += SPEED;
-      // Auto-shoot when using keyboard
+      if (this.keys['ArrowLeft']  || this.keys['KeyA']) this.x -= SPEED * dt;
+      if (this.keys['ArrowRight'] || this.keys['KeyD']) this.x += SPEED * dt;
+      if (this.keys['ArrowUp']    || this.keys['KeyW']) this.y -= SPEED * dt;
+      if (this.keys['ArrowDown']  || this.keys['KeyS']) this.y += SPEED * dt;
       this.shooting = true;
     }
 
@@ -119,11 +111,11 @@ export class Player {
     this.x = Math.max(this.width / 2, Math.min(CANVAS_W - this.width / 2, this.x));
     this.y = Math.max(this.height / 2, Math.min(CANVAS_H - this.height / 2, this.y));
 
-    if (this.invincible > 0) this.invincible--;
+    if (this.invincible > 0) this.invincible -= dt;
 
     // Shoot
     if (this.shooting) {
-      this.shootTimer--;
+      this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
         this._fire(bullets);
         this.shootTimer = SHOOT_INTERVAL;
@@ -153,7 +145,6 @@ export class Player {
   }
 
   getBounds() {
-    // Tighter hitbox
     const hw = this.width * 0.35;
     const hh = this.height * 0.4;
     return { x: this.x - hw, y: this.y - hh, w: hw * 2, h: hh * 2 };
@@ -165,11 +156,9 @@ export class Player {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Engine glow
     ctx.shadowColor = '#08f';
     ctx.shadowBlur = 18;
 
-    // Body
     ctx.fillStyle = '#4af';
     ctx.beginPath();
     ctx.moveTo(0, -this.height / 2);
@@ -179,13 +168,11 @@ export class Player {
     ctx.closePath();
     ctx.fill();
 
-    // Cockpit
     ctx.fillStyle = '#aef';
     ctx.beginPath();
     ctx.ellipse(0, -4, 6, 10, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Engine flame
     ctx.shadowColor = '#fa0';
     ctx.shadowBlur = 14;
     ctx.fillStyle = `hsl(${40 + Math.random() * 20}, 100%, 60%)`;

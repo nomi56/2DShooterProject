@@ -11,11 +11,11 @@ export class Particle {
     this.dead = false;
   }
 
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vy += 0.05;
-    this.alpha -= this.decay;
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.vy += 0.05 * dt;
+    this.alpha -= this.decay * dt;
     if (this.alpha <= 0) this.dead = true;
   }
 

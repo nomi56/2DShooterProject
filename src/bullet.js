@@ -12,21 +12,19 @@ export class Bullet {
     this.color = isPlayer ? '#0ff' : '#f44';
   }
 
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
+  update(dt) {
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
   }
 
   draw(ctx) {
     ctx.save();
     if (this.isPlayer) {
-      // Glowing player bullet
       ctx.shadowColor = this.color;
       ctx.shadowBlur = 8;
       ctx.fillStyle = this.color;
       ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
     } else {
-      // Enemy bullet — circle
       ctx.shadowColor = this.color;
       ctx.shadowBlur = 6;
       ctx.fillStyle = this.color;

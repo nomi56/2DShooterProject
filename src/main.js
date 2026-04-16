@@ -1,6 +1,6 @@
 import { Player } from './player.js';
-import { Stage, PowerUp } from './stage.js';
-import { Particle, spawnExplosion } from './particle.js';
+import { Stage } from './stage.js';
+import { spawnExplosion } from './particle.js';
 import { drawHUD, drawTitle, drawGameOver, drawStageClear } from './ui.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -44,7 +44,6 @@ window.addEventListener('keydown', (e) => {
 });
 canvas.addEventListener('mousedown', () => onAction());
 canvas.addEventListener('touchstart', (e) => {
-  // Only trigger state transition on TITLE / GAMEOVER / CLEAR
   if (state !== STATE.PLAYING) {
     e.preventDefault();
     onAction();
@@ -52,27 +51,18 @@ canvas.addEventListener('touchstart', (e) => {
 }, { passive: false });
 
 // ─── Main loop ────────────────────────────────────────────────────────────────
-const FIXED_DT = 1000 / 60; // always update at 60fps regardless of display rate
+// dt is normalized to 60fps: dt=1.0 at 60fps, dt=0.5 at 120fps, dt=2.0 at 30fps.
+// All velocities and timers are tuned for dt=1.0.
 let lastTime = 0;
-let accumulator = 0;
 
 function loop(timestamp) {
   requestAnimationFrame(loop);
 
   const elapsed = timestamp - lastTime;
   lastTime = timestamp;
-  // Cap to 200ms to avoid spiral-of-death after tab is backgrounded
-  accumulator += Math.min(elapsed, 200);
+  // Clamp dt: ignore first frame (elapsed≈0) and cap after tab switch
+  const dt = Math.min(elapsed, 100) / (1000 / 60);
 
-  // Run as many fixed-step updates as needed to catch up
-  while (accumulator >= FIXED_DT) {
-    if (state === STATE.PLAYING) {
-      _update();
-    }
-    accumulator -= FIXED_DT;
-  }
-
-  // Draw once per animation frame
   stage.drawBackground(ctx);
 
   if (state === STATE.TITLE) {
@@ -80,8 +70,8 @@ function loop(timestamp) {
     return;
   }
 
-  // ── Draw ──
   if (state === STATE.PLAYING) {
+    _update(dt);
     stage.drawForeground(ctx);
     for (const b of bullets) b.draw(ctx);
     for (const p of particles) p.draw(ctx);
@@ -100,14 +90,14 @@ function loop(timestamp) {
   }
 }
 
-function _update() {
-  player.update(bullets);
-  stage.update(bullets, spawnExplosion, particles);
+function _update(dt) {
+  player.update(bullets, dt);
+  stage.update(bullets, spawnExplosion, particles, dt);
 
-  for (const b of bullets) b.update();
+  for (const b of bullets) b.update(dt);
   bullets = bullets.filter(b => !b.dead && b.x > -20 && b.x < W + 20 && b.y > -40 && b.y < H + 40);
 
-  for (const p of particles) p.update();
+  for (const p of particles) p.update(dt);
   particles = particles.filter(p => !p.dead);
 
   // ── Collision: player bullets vs enemies ──
@@ -155,11 +145,8 @@ function _update() {
   }
 
   // ── State transitions ──
-  if (player.dead) {
-    state = STATE.GAMEOVER;
-  } else if (stage.cleared) {
-    state = STATE.CLEAR;
-  }
+  if (player.dead)     state = STATE.GAMEOVER;
+  else if (stage.cleared) state = STATE.CLEAR;
 }
 
 loop();
