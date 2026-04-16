@@ -4,14 +4,20 @@ import { Bullet } from './bullet.js';
 const CANVAS_W = 480;
 const CANVAS_H = 640;
 const SPEED = 4;
-const SHOOT_INTERVAL = 12; // frames @ 60fps
+
+// Fire rate: shoot interval (dt units) per level 1–4
+const FIRE_RATE_INTERVALS = [12, 8, 5, 3];
+// Bullet speed multiplier per level 1–4
+const BULLET_SPEED_MULTS  = [1.0, 1.4, 1.8, 2.2];
 
 export class Player extends Character {
   constructor() {
     super(CANVAS_W / 2, CANVAS_H - 80, 32, 36, 3); // hp=3 represents lives
     this.invincible = 0;
     this.shootTimer = 0;
-    this.powerLevel = 1; // 1–3
+    this.powerLevel     = 1; // spread   1–3
+    this.fireRateLevel  = 1; // interval 1–4
+    this.bulletSpeedLevel = 1; // speed  1–4
 
     // Input state
     this.keys = {};
@@ -27,7 +33,9 @@ export class Player extends Character {
   }
 
   /** Expose hp as lives for HUD compatibility. */
-  get lives() { return this.hp; }
+  get lives()        { return this.hp; }
+  get shootInterval(){ return FIRE_RATE_INTERVALS[this.fireRateLevel - 1]; }
+  get bulletSpeedMult(){ return BULLET_SPEED_MULTS[this.bulletSpeedLevel - 1]; }
 
   _bindInput() {
     window.addEventListener('keydown', (e) => {
@@ -109,22 +117,23 @@ export class Player extends Character {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
         this._fire(bullets);
-        this.shootTimer = SHOOT_INTERVAL;
+        this.shootTimer = this.shootInterval;
       }
     }
   }
 
   _fire(bullets) {
-    const bx = this.x;
-    const by = this.y - this.height / 2;
-    bullets.push(new Bullet(bx, by, 0, -12, true, 1));
+    const bx  = this.x;
+    const by  = this.y - this.height / 2;
+    const spd = this.bulletSpeedMult;
+    bullets.push(new Bullet(bx, by, 0, -12 * spd, true, 1));
     if (this.powerLevel >= 2) {
-      bullets.push(new Bullet(bx - 14, by, -0.5, -11.5, true, 1));
-      bullets.push(new Bullet(bx + 14, by,  0.5, -11.5, true, 1));
+      bullets.push(new Bullet(bx - 14, by, -0.5 * spd, -11.5 * spd, true, 1));
+      bullets.push(new Bullet(bx + 14, by,  0.5 * spd, -11.5 * spd, true, 1));
     }
     if (this.powerLevel >= 3) {
-      bullets.push(new Bullet(bx - 26, by, -1, -11, true, 1));
-      bullets.push(new Bullet(bx + 26, by,  1, -11, true, 1));
+      bullets.push(new Bullet(bx - 26, by, -1 * spd, -11 * spd, true, 1));
+      bullets.push(new Bullet(bx + 26, by,  1 * spd, -11 * spd, true, 1));
     }
   }
 

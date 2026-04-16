@@ -26,10 +26,18 @@ class Star {
 }
 
 // ─── Powerup item ─────────────────────────────────────────────────────────────
+// type: 'power' (spread) | 'rate' (fire rate) | 'speed' (bullet speed)
+const POWERUP_STYLES = {
+  power: { color: '#ff0', label: 'P' },
+  rate:  { color: '#0ff', label: 'R' },
+  speed: { color: '#f80', label: 'S' },
+};
+
 export class PowerUp {
-  constructor(x, y) {
+  constructor(x, y, type = 'power') {
     this.x = x;
     this.y = y;
+    this.type = type;
     this.vy = 1.5;
     this.dead = false;
     this.t = 0;
@@ -41,19 +49,35 @@ export class PowerUp {
   }
   getBounds() { return { x: this.x - 10, y: this.y - 10, w: 20, h: 20 }; }
   draw(ctx) {
+    const { color, label } = POWERUP_STYLES[this.type];
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.t * 0.05);
-    ctx.shadowColor = '#ff0';
-    ctx.shadowBlur = 12;
-    ctx.strokeStyle = '#ff0';
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = color;
     ctx.lineWidth = 2;
-    ctx.strokeRect(-8, -8, 16, 16);
-    ctx.fillStyle = '#ff0';
+    if (this.type === 'rate') {
+      // Circle
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (this.type === 'speed') {
+      // Diamond
+      ctx.beginPath();
+      ctx.moveTo(0, -9); ctx.lineTo(9, 0);
+      ctx.lineTo(0, 9);  ctx.lineTo(-9, 0);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      // Square (power)
+      ctx.strokeRect(-8, -8, 16, 16);
+    }
+    ctx.fillStyle = color;
     ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('P', 0, 0);
+    ctx.fillText(label, 0, 0);
     ctx.restore();
   }
 }
@@ -108,7 +132,11 @@ export class Stage {
       if (e.dead) {
         spawnExplosion(particles, e.x, e.y, e instanceof Boss ? 60 : 20,
           e instanceof Boss ? '#f60' : '#fa0');
-        if (Math.random() < 0.2) this.powerUps.push(new PowerUp(e.x, e.y));
+        if (Math.random() < 0.3) {
+          const types = ['power', 'rate', 'speed'];
+          const type = types[Math.floor(Math.random() * types.length)];
+          this.powerUps.push(new PowerUp(e.x, e.y, type));
+        }
       }
     }
     this.enemies = this.enemies.filter(e => !e.dead);
