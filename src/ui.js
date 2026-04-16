@@ -1,3 +1,5 @@
+import { BUILD } from './version.js';
+
 const CANVAS_W = 480;
 const CANVAS_H = 640;
 
@@ -63,6 +65,10 @@ export function drawTitle(ctx) {
   ctx.fillStyle = '#ff0';
   ctx.font = 'bold 18px monospace';
   ctx.fillText('SPACE / Click / Tap to Start', CANVAS_W / 2, 380);
+
+  ctx.fillStyle = '#555';
+  ctx.font = '11px monospace';
+  ctx.fillText(`build: ${BUILD}`, CANVAS_W / 2, CANVAS_H - 12);
 }
 
 export function drawGameOver(ctx, score) {
