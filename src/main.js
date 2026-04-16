@@ -92,7 +92,7 @@ function loop(timestamp) {
 
 function _update(dt) {
   player.update(bullets, dt);
-  stage.update(bullets, spawnExplosion, particles, dt);
+  stage.update(bullets, spawnExplosion, particles, dt, player.x, player.y);
 
   for (const b of bullets) b.update(dt);
   bullets = bullets.filter(b => !b.dead && b.x > -20 && b.x < W + 20 && b.y > -40 && b.y < H + 40);

@@ -1,4 +1,4 @@
-import { SmallEnemy, MediumEnemy, Boss } from './enemies/index.js';
+import { SmallEnemy, MediumEnemy, Boss, SniperEnemy, TankEnemy } from './enemies/index.js';
 
 const CANVAS_W = 480;
 const CANVAS_H = 640;
@@ -88,15 +88,49 @@ function buildWaves() {
   const waves = [];
   const add = (frame, type, x, y) => waves.push({ frame, type, x, y });
 
-  for (let i = 0; i < 6; i++) add(60 + i * 30, 'small', 60 + i * 70, -30);
-  for (let i = 0; i < 6; i++) add(300 + i * 25, 'small', 80 + i * 60, -30);
-  add(500, 'medium', 160, -50);
-  add(560, 'medium', 320, -50);
-  for (let i = 0; i < 8; i++) add(700 + i * 20, 'small', 40 + i * 55, -30);
-  add(850, 'medium', 240, -50);
-  add(1000, 'medium', 120, -50);
-  add(1060, 'medium', 360, -50);
-  add(1300, 'boss', 240, -90);
+  // ── Phase 1: Small enemies (0–600) ──────────────────────────────────────────
+  for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
+  for (let i = 0; i < 6; i++) add(300 + i * 25, 'small',  80 + i * 60, -30);
+  for (let i = 0; i < 5; i++) add(520 + i * 20, 'small', 100 + i * 70, -30);
+
+  // ── Phase 2: Medium enemies join (600–1000) ──────────────────────────────────
+  add(650, 'medium', 160, -50);
+  add(710, 'medium', 320, -50);
+  for (let i = 0; i < 8; i++) add(800 + i * 20, 'small', 40 + i * 55, -30);
+  add(960, 'medium', 240, -50);
+
+  // ── Phase 3: Snipers introduced (1000–1500) ──────────────────────────────────
+  add(1050, 'sniper', 120, -40);
+  add(1110, 'sniper', 360, -40);
+  for (let i = 0; i < 6; i++) add(1200 + i * 25, 'small', 60 + i * 72, -30);
+  add(1350, 'sniper', 200, -40);
+  add(1350, 'medium', 350, -50);
+  add(1420, 'sniper', 300, -40);
+  add(1480, 'medium', 130, -50);
+
+  // ── Phase 4: Tank enemies introduced (1500–2000) ─────────────────────────────
+  add(1550, 'tank',   240, -60);
+  for (let i = 0; i < 6; i++) add(1620 + i * 28, 'small',  50 + i * 76, -30);
+  add(1750, 'sniper', 130, -40);
+  add(1750, 'sniper', 350, -40);
+  add(1870, 'tank',   150, -60);
+  add(1870, 'tank',   330, -60);
+  add(1950, 'medium', 240, -50);
+
+  // ── Phase 5: Intense pre-boss rush (2000–2400) ───────────────────────────────
+  for (let i = 0; i < 8; i++) add(2000 + i * 22, 'small',  40 + i * 55, -30);
+  add(2120, 'medium', 120, -50);
+  add(2120, 'medium', 360, -50);
+  add(2160, 'sniper', 240, -40);
+  add(2220, 'tank',   200, -60);
+  add(2280, 'sniper',  80, -40);
+  add(2280, 'sniper', 400, -40);
+  for (let i = 0; i < 6; i++) add(2340 + i * 25, 'small',  70 + i * 68, -30);
+  add(2420, 'medium', 170, -50);
+  add(2420, 'medium', 310, -50);
+
+  // ── Boss ─────────────────────────────────────────────────────────────────────
+  add(2600, 'boss', 240, -90);
 
   return waves.sort((a, b) => a.frame - b.frame);
 }
@@ -114,7 +148,7 @@ export class Stage {
     this.cleared = false;
   }
 
-  update(bullets, spawnExplosion, particles, dt) {
+  update(bullets, spawnExplosion, particles, dt, playerX = 240, playerY = 400) {
     this.frame += dt;
 
     for (const s of this.stars) s.update(dt);
@@ -124,11 +158,13 @@ export class Stage {
       const w = this.waves[this.waveIdx++];
       if (w.type === 'small')  this.enemies.push(new SmallEnemy(w.x, w.y));
       if (w.type === 'medium') this.enemies.push(new MediumEnemy(w.x, w.y));
+      if (w.type === 'sniper') this.enemies.push(new SniperEnemy(w.x, w.y));
+      if (w.type === 'tank')   this.enemies.push(new TankEnemy(w.x, w.y));
       if (w.type === 'boss')   { this.enemies.push(new Boss()); this.bossSpawned = true; }
     }
 
     for (const e of this.enemies) {
-      e.update(bullets, dt);
+      e.update(bullets, dt, playerX, playerY);
       if (e.dead) {
         spawnExplosion(particles, e.x, e.y, e instanceof Boss ? 60 : 20,
           e instanceof Boss ? '#f60' : '#fa0');
