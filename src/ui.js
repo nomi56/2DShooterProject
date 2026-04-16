@@ -53,12 +53,12 @@ export function drawTitle(ctx) {
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#aaa';
   ctx.font = '16px monospace';
-  ctx.fillText('MOVE: Mouse / Arrow keys', CANVAS_W / 2, 280);
-  ctx.fillText('SHOOT: Auto (keyboard) / Click', CANVAS_W / 2, 305);
+  ctx.fillText('MOVE: Mouse / Arrow keys / Swipe', CANVAS_W / 2, 280);
+  ctx.fillText('SHOOT: Auto', CANVAS_W / 2, 305);
 
   ctx.fillStyle = '#ff0';
   ctx.font = 'bold 18px monospace';
-  ctx.fillText('Press SPACE or Click to Start', CANVAS_W / 2, 380);
+  ctx.fillText('SPACE / Click / Tap to Start', CANVAS_W / 2, 380);
 }
 
 export function drawGameOver(ctx, score) {
@@ -79,7 +79,7 @@ export function drawGameOver(ctx, score) {
 
   ctx.fillStyle = '#ff0';
   ctx.font = 'bold 18px monospace';
-  ctx.fillText('Press SPACE or Click to Retry', CANVAS_W / 2, 380);
+  ctx.fillText('SPACE / Click / Tap to Retry', CANVAS_W / 2, 380);
 }
 
 export function drawStageClear(ctx, score) {
@@ -100,5 +100,5 @@ export function drawStageClear(ctx, score) {
 
   ctx.fillStyle = '#ff0';
   ctx.font = 'bold 18px monospace';
-  ctx.fillText('Press SPACE or Click to Retry', CANVAS_W / 2, 380);
+  ctx.fillText('SPACE / Click / Tap to Retry', CANVAS_W / 2, 380);
 }

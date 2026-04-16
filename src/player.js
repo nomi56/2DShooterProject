@@ -23,6 +23,11 @@ export class Player {
     this.mouse = null;
     this.shooting = false;
 
+    // Touch state
+    this._touchActive = false;
+    this._lastTouchX = 0;
+    this._lastTouchY = 0;
+
     this._bindInput();
   }
 
@@ -37,6 +42,8 @@ export class Player {
     });
 
     const canvas = document.getElementById('gameCanvas');
+
+    // Mouse
     canvas.addEventListener('mousemove', (e) => {
       const rect = canvas.getBoundingClientRect();
       const scaleX = CANVAS_W / rect.width;
@@ -49,11 +56,47 @@ export class Player {
     canvas.addEventListener('mousedown', () => { this.shooting = true; });
     canvas.addEventListener('mouseup', () => { this.shooting = false; });
     canvas.addEventListener('mouseleave', () => { this.mouse = null; });
+
+    // Touch — swipe delta movement, auto-fire while touching
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_W / rect.width;
+      const scaleY = CANVAS_H / rect.height;
+      this._lastTouchX = (t.clientX - rect.left) * scaleX;
+      this._lastTouchY = (t.clientY - rect.top)  * scaleY;
+      this._touchActive = true;
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_W / rect.width;
+      const scaleY = CANVAS_H / rect.height;
+      const cx = (t.clientX - rect.left) * scaleX;
+      const cy = (t.clientY - rect.top)  * scaleY;
+      this.x += cx - this._lastTouchX;
+      this.y += cy - this._lastTouchY;
+      this._lastTouchX = cx;
+      this._lastTouchY = cy;
+    }, { passive: false });
+
+    const endTouch = (e) => {
+      e.preventDefault();
+      this._touchActive = false;
+    };
+    canvas.addEventListener('touchend',    endTouch, { passive: false });
+    canvas.addEventListener('touchcancel', endTouch, { passive: false });
   }
 
   update(bullets) {
-    // Mouse follow
-    if (this.mouse) {
+    // Touch: delta-move already applied in event; just clamp and auto-fire
+    if (this._touchActive) {
+      this.shooting = true;
+    } else if (this.mouse) {
+      // Mouse follow
       const dx = this.mouse.x - this.x;
       const dy = this.mouse.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy);

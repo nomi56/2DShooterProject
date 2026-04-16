@@ -43,6 +43,13 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') onAction();
 });
 canvas.addEventListener('mousedown', () => onAction());
+canvas.addEventListener('touchstart', (e) => {
+  // Only trigger state transition on TITLE / GAMEOVER / CLEAR
+  if (state !== STATE.PLAYING) {
+    e.preventDefault();
+    onAction();
+  }
+}, { passive: false });
 
 // ─── Main loop ────────────────────────────────────────────────────────────────
 function loop() {
