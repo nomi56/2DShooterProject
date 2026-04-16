@@ -5,7 +5,7 @@ const CANVAS_W = 480;
 
 export class Boss extends Character {
   constructor() {
-    super(CANVAS_W / 2, -80, 100, 80, 750);
+    super(CANVAS_W / 2, -80, 100, 80, 1500);
     this.score = 5000;
     this.t = 0;
     this.phase = 0;
