@@ -5,8 +5,8 @@ const CANVAS_H = 640;
 
 /** High-HP slow enemy that fires a wide 5-way spread. */
 export class TankEnemy extends Character {
-  constructor(x, y) {
-    super(x, y, 52, 46, 25);
+  constructor(x, y, hpMult = 1) {
+    super(x, y, 52, 46, 25, hpMult);
     this.score = 600;
     this.vy = 0.5;
     this.baseX = x;

@@ -140,9 +140,9 @@ function _update(dt) {
     if (pu.dead) continue;
     if (rectsOverlap(pu.getBounds(), pb)) {
       pu.dead = true;
-      if (pu.type === 'power' && player.powerLevel < 3)       player.powerLevel++;
-      if (pu.type === 'rate'  && player.fireRateLevel < 4)    player.fireRateLevel++;
-      if (pu.type === 'speed' && player.bulletSpeedLevel < 4) player.bulletSpeedLevel++;
+      if (pu.type === 'power' && player.powerLevel       < 10) player.powerLevel++;
+      if (pu.type === 'rate'  && player.fireRateLevel    < 10) player.fireRateLevel++;
+      if (pu.type === 'speed' && player.bulletSpeedLevel < 10) player.bulletSpeedLevel++;
     }
   }
 

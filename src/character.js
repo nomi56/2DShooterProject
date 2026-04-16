@@ -13,13 +13,14 @@
  *   - draw(ctx)
  */
 export class Character {
-  constructor(x, y, width, height, hp) {
+  constructor(x, y, width, height, hp, hpMult = 1) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.hp = hp;
-    this.maxHp = hp;
+    const scaled = Math.max(1, Math.round(hp * hpMult));
+    this.hp = scaled;
+    this.maxHp = scaled;
     this.dead = false;
     this.score = 0;
   }

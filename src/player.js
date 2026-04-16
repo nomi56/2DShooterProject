@@ -5,19 +5,20 @@ const CANVAS_W = 480;
 const CANVAS_H = 640;
 const SPEED = 4;
 
-// Fire rate: shoot interval (dt units) per level 1–4
-const FIRE_RATE_INTERVALS = [12, 8, 5, 3];
-// Bullet speed multiplier per level 1–4
-const BULLET_SPEED_MULTS  = [1.0, 1.4, 1.8, 2.2];
+// Fire rate: shoot interval (dt units) per level 1–10
+const FIRE_RATE_INTERVALS = [12, 10, 8, 6, 5, 4, 3, 2.5, 2, 1.5];
+// Bullet speed multiplier per level 1–10
+const BULLET_SPEED_MULTS  = [1.0, 1.3, 1.6, 1.9, 2.2, 2.5, 2.8, 3.1, 3.4, 3.7];
+const MAX_LEVEL = 10;
 
 export class Player extends Character {
   constructor() {
     super(CANVAS_W / 2, CANVAS_H - 80, 32, 36, 3); // hp=3 represents lives
     this.invincible = 0;
     this.shootTimer = 0;
-    this.powerLevel     = 1; // spread   1–3
-    this.fireRateLevel  = 1; // interval 1–4
-    this.bulletSpeedLevel = 1; // speed  1–4
+    this.powerLevel       = 1; // spread   1–MAX_LEVEL
+    this.fireRateLevel    = 1; // interval 1–MAX_LEVEL
+    this.bulletSpeedLevel = 1; // speed    1–MAX_LEVEL
 
     // Input state
     this.keys = {};
@@ -126,14 +127,16 @@ export class Player extends Character {
     const bx  = this.x;
     const by  = this.y - this.height / 2;
     const spd = this.bulletSpeedMult;
+    // Center bullet
     bullets.push(new Bullet(bx, by, 0, -12 * spd, true, 1));
-    if (this.powerLevel >= 2) {
-      bullets.push(new Bullet(bx - 14, by, -0.5 * spd, -11.5 * spd, true, 1));
-      bullets.push(new Bullet(bx + 14, by,  0.5 * spd, -11.5 * spd, true, 1));
-    }
-    if (this.powerLevel >= 3) {
-      bullets.push(new Bullet(bx - 26, by, -1 * spd, -11 * spd, true, 1));
-      bullets.push(new Bullet(bx + 26, by,  1 * spd, -11 * spd, true, 1));
+    // Each extra power level adds a symmetric pair at a wider angle
+    for (let i = 1; i < this.powerLevel; i++) {
+      const angle = i * 0.18; // radians spread per pair
+      const vy = -12 * spd * Math.cos(angle);
+      const vx =  12 * spd * Math.sin(angle);
+      const xOff = i * 13;
+      bullets.push(new Bullet(bx - xOff, by, -vx, vy, true, 1));
+      bullets.push(new Bullet(bx + xOff, by,  vx, vy, true, 1));
     }
   }
 

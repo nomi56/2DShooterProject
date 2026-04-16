@@ -5,7 +5,7 @@ const CANVAS_W = 480;
 
 export class Boss extends Character {
   constructor() {
-    super(CANVAS_W / 2, -80, 100, 80, 150);
+    super(CANVAS_W / 2, -80, 100, 80, 1500);
     this.score = 5000;
     this.t = 0;
     this.phase = 0;
@@ -30,14 +30,14 @@ export class Boss extends Character {
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
       if (this.phase === 1) {
-        const count = 10;
+        const count = 100;
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2;
           bullets.push(new Bullet(this.x, this.y, Math.cos(a) * 3, Math.sin(a) * 3, false));
         }
         this.shootTimer = 80;
       } else {
-        const count = 16;
+        const count = 160;
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2 + this.angle;
           bullets.push(new Bullet(this.x, this.y, Math.cos(a) * 4, Math.sin(a) * 4, false));

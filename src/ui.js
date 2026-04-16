@@ -19,13 +19,14 @@ export function drawHUD(ctx, player) {
   }
 
   // Power / FireRate / BulletSpeed levels
-  ctx.font = '12px monospace';
+  ctx.font = '11px monospace';
+  const MAX = 10;
   ctx.fillStyle = '#ff0';
-  ctx.fillText(`PWR: ${'■'.repeat(player.powerLevel)}${'□'.repeat(3 - player.powerLevel)}`, 10, 66);
+  ctx.fillText(`PWR:${'■'.repeat(player.powerLevel)}${'□'.repeat(MAX - player.powerLevel)}`, 10, 66);
   ctx.fillStyle = '#0ff';
-  ctx.fillText(`RTE: ${'■'.repeat(player.fireRateLevel)}${'□'.repeat(4 - player.fireRateLevel)}`, 10, 82);
+  ctx.fillText(`RTE:${'■'.repeat(player.fireRateLevel)}${'□'.repeat(MAX - player.fireRateLevel)}`, 10, 80);
   ctx.fillStyle = '#f80';
-  ctx.fillText(`SPD: ${'■'.repeat(player.bulletSpeedLevel)}${'□'.repeat(4 - player.bulletSpeedLevel)}`, 10, 98);
+  ctx.fillText(`SPD:${'■'.repeat(player.bulletSpeedLevel)}${'□'.repeat(MAX - player.bulletSpeedLevel)}`, 10, 94);
 }
 
 function _drawMiniShip(ctx, x, y) {

@@ -135,17 +135,43 @@ function buildWaves() {
   return waves.sort((a, b) => a.frame - b.frame);
 }
 
+const BOSS_FRAME = 2600;
+// Density caps per enemy type (avoids flooding with heavy enemies)
+const DENSITY_CAP = { small: 8, medium: 3, sniper: 2, tank: 2 };
+
 // ─── Stage manager ────────────────────────────────────────────────────────────
 export class Stage {
   constructor() {
     this.stars = Array.from({ length: 120 }, () => new Star());
     this.enemies = [];
     this.powerUps = [];
-    this.frame = 0; // accumulated in dt units, equivalent to 60fps frame count
+    this.frame = 0;
     this.waves = buildWaves();
     this.waveIdx = 0;
     this.bossSpawned = false;
     this.cleared = false;
+    this._killCount = 0; // tracks kills for drop timing
+  }
+
+  /** Returns 1/2/4/8 based on which quarter of the stage we're in. */
+  _difficultyMult() {
+    const q = Math.min(3, Math.floor((this.frame / BOSS_FRAME) * 4));
+    return Math.pow(2, q);
+  }
+
+  _spawnWave(w) {
+    const hpMult  = this._difficultyMult();
+    const density = Math.min(DENSITY_CAP[w.type] ?? 1, hpMult);
+    for (let d = 0; d < density; d++) {
+      const x = density === 1 ? w.x : Math.round((d + 0.5) * (CANVAS_W / density));
+      switch (w.type) {
+        case 'small':  this.enemies.push(new SmallEnemy(x,  w.y, hpMult)); break;
+        case 'medium': this.enemies.push(new MediumEnemy(x, w.y, hpMult)); break;
+        case 'sniper': this.enemies.push(new SniperEnemy(x, w.y, hpMult)); break;
+        case 'tank':   this.enemies.push(new TankEnemy(x,   w.y, hpMult)); break;
+        case 'boss':   this.enemies.push(new Boss()); this.bossSpawned = true; break;
+      }
+    }
   }
 
   update(bullets, spawnExplosion, particles, dt, playerX = 240, playerY = 400) {
@@ -153,14 +179,8 @@ export class Stage {
 
     for (const s of this.stars) s.update(dt);
 
-    // Spawn enemies
     while (this.waveIdx < this.waves.length && this.waves[this.waveIdx].frame <= this.frame) {
-      const w = this.waves[this.waveIdx++];
-      if (w.type === 'small')  this.enemies.push(new SmallEnemy(w.x, w.y));
-      if (w.type === 'medium') this.enemies.push(new MediumEnemy(w.x, w.y));
-      if (w.type === 'sniper') this.enemies.push(new SniperEnemy(w.x, w.y));
-      if (w.type === 'tank')   this.enemies.push(new TankEnemy(w.x, w.y));
-      if (w.type === 'boss')   { this.enemies.push(new Boss()); this.bossSpawned = true; }
+      this._spawnWave(this.waves[this.waveIdx++]);
     }
 
     for (const e of this.enemies) {
@@ -168,7 +188,9 @@ export class Stage {
       if (e.dead) {
         spawnExplosion(particles, e.x, e.y, e instanceof Boss ? 60 : 20,
           e instanceof Boss ? '#f60' : '#fa0');
-        if (Math.random() < 0.3) {
+        // Drop a power-up every 5 kills (Boss always drops one)
+        this._killCount++;
+        if (e instanceof Boss || this._killCount % 5 === 0) {
           const types = ['power', 'rate', 'speed'];
           const type = types[Math.floor(Math.random() * types.length)];
           this.powerUps.push(new PowerUp(e.x, e.y, type));
