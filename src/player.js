@@ -77,8 +77,8 @@ export class Player extends Character {
       const rect = canvas.getBoundingClientRect();
       const cx = (t.clientX - rect.left) * (CANVAS_W / rect.width);
       const cy = (t.clientY - rect.top)  * (CANVAS_H / rect.height);
-      this.x += cx - this._lastTouchX;
-      this.y += cy - this._lastTouchY;
+      this.x += (cx - this._lastTouchX) * 2;
+      this.y += (cy - this._lastTouchY) * 2;
       this._lastTouchX = cx;
       this._lastTouchY = cy;
     }, { passive: false });
