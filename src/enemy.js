@@ -1,22 +1,17 @@
+import { Character } from './character.js';
 import { Bullet } from './bullet.js';
 
 const CANVAS_W = 480;
 const CANVAS_H = 640;
 
 // ─── Small Enemy ─────────────────────────────────────────────────────────────
-export class SmallEnemy {
+export class SmallEnemy extends Character {
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 28;
-    this.height = 24;
-    this.hp = 2;
-    this.maxHp = 2;
+    super(x, y, 28, 24, 2);
+    this.score = 100;
     this.speed = 1.5 + Math.random();
     this.vy = this.speed;
     this.vx = (Math.random() - 0.5) * 1.5;
-    this.dead = false;
-    this.score = 100;
     this.shootTimer = Math.floor(Math.random() * 80) + 60;
   }
 
@@ -32,15 +27,6 @@ export class SmallEnemy {
       bullets.push(new Bullet(this.x, this.y + this.height / 2, 0, 5, false));
       this.shootTimer = 90;
     }
-  }
-
-  hit(power) {
-    this.hp -= power;
-    if (this.hp <= 0) this.dead = true;
-  }
-
-  getBounds() {
-    return { x: this.x - this.width / 2, y: this.y - this.height / 2, w: this.width, h: this.height };
   }
 
   draw(ctx) {
@@ -69,15 +55,9 @@ export class SmallEnemy {
 }
 
 // ─── Medium Enemy ─────────────────────────────────────────────────────────────
-export class MediumEnemy {
+export class MediumEnemy extends Character {
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 44;
-    this.height = 38;
-    this.hp = 10;
-    this.maxHp = 10;
-    this.dead = false;
+    super(x, y, 44, 38, 10);
     this.score = 400;
     this.t = 0;
     this.baseX = x;
@@ -111,22 +91,12 @@ export class MediumEnemy {
     }
   }
 
-  hit(power) {
-    this.hp -= power;
-    if (this.hp <= 0) this.dead = true;
-  }
-
-  getBounds() {
-    return { x: this.x - this.width / 2, y: this.y - this.height / 2, w: this.width, h: this.height };
-  }
-
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
 
     ctx.shadowColor = '#a0f';
     ctx.shadowBlur = 14;
-
     ctx.fillStyle = '#84c';
     ctx.beginPath();
     for (let i = 0; i < 6; i++) {
@@ -143,27 +113,21 @@ export class MediumEnemy {
     ctx.arc(0, 0, 10, 0, Math.PI * 2);
     ctx.fill();
 
-    const bw = this.width;
+    // HP bar
     const ratio = this.hp / this.maxHp;
     ctx.fillStyle = '#333';
-    ctx.fillRect(-bw / 2, -this.height / 2 - 8, bw, 4);
+    ctx.fillRect(-this.width / 2, -this.height / 2 - 8, this.width, 4);
     ctx.fillStyle = `hsl(${ratio * 120}, 100%, 50%)`;
-    ctx.fillRect(-bw / 2, -this.height / 2 - 8, bw * ratio, 4);
+    ctx.fillRect(-this.width / 2, -this.height / 2 - 8, this.width * ratio, 4);
 
     ctx.restore();
   }
 }
 
 // ─── Boss ─────────────────────────────────────────────────────────────────────
-export class Boss {
+export class Boss extends Character {
   constructor() {
-    this.x = CANVAS_W / 2;
-    this.y = -80;
-    this.width = 100;
-    this.height = 80;
-    this.hp = 150;
-    this.maxHp = 150;
-    this.dead = false;
+    super(CANVAS_W / 2, -80, 100, 80, 150);
     this.score = 5000;
     this.t = 0;
     this.phase = 0;
@@ -205,15 +169,6 @@ export class Boss {
     }
   }
 
-  hit(power) {
-    this.hp -= power;
-    if (this.hp <= 0) { this.hp = 0; this.dead = true; }
-  }
-
-  getBounds() {
-    return { x: this.x - this.width / 2, y: this.y - this.height / 2, w: this.width, h: this.height };
-  }
-
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
@@ -248,7 +203,7 @@ export class Boss {
 
     ctx.restore();
 
-    // Boss HP bar
+    // Boss HP bar (top of screen)
     ctx.save();
     const barW = CANVAS_W - 40;
     const ratio = this.hp / this.maxHp;

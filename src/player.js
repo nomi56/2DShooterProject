@@ -1,3 +1,4 @@
+import { Character } from './character.js';
 import { Bullet } from './bullet.js';
 
 const CANVAS_W = 480;
@@ -5,18 +6,12 @@ const CANVAS_H = 640;
 const SPEED = 4;
 const SHOOT_INTERVAL = 12; // frames @ 60fps
 
-export class Player {
+export class Player extends Character {
   constructor() {
-    this.x = CANVAS_W / 2;
-    this.y = CANVAS_H - 80;
-    this.width = 32;
-    this.height = 36;
-    this.lives = 3;
+    super(CANVAS_W / 2, CANVAS_H - 80, 32, 36, 3); // hp=3 represents lives
     this.invincible = 0;
     this.shootTimer = 0;
     this.powerLevel = 1; // 1–3
-    this.dead = false;
-    this.score = 0;
 
     // Input state
     this.keys = {};
@@ -30,6 +25,9 @@ export class Player {
 
     this._bindInput();
   }
+
+  /** Expose hp as lives for HUD compatibility. */
+  get lives() { return this.hp; }
 
   _bindInput() {
     window.addEventListener('keydown', (e) => {
@@ -46,19 +44,16 @@ export class Player {
     // Mouse
     canvas.addEventListener('mousemove', (e) => {
       const rect = canvas.getBoundingClientRect();
-      const scaleX = CANVAS_W / rect.width;
-      const scaleY = CANVAS_H / rect.height;
       this.mouse = {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
+        x: (e.clientX - rect.left) * (CANVAS_W / rect.width),
+        y: (e.clientY - rect.top)  * (CANVAS_H / rect.height),
       };
     });
-    canvas.addEventListener('mousedown', () => { this.shooting = true; });
-    canvas.addEventListener('mouseup',   () => { this.shooting = false; });
+    canvas.addEventListener('mousedown',  () => { this.shooting = true; });
+    canvas.addEventListener('mouseup',    () => { this.shooting = false; });
     canvas.addEventListener('mouseleave', () => { this.mouse = null; });
 
     // Touch — swipe delta movement, auto-fire while touching
-    // Delta is applied directly in event handler (already frame-rate-independent)
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       const t = e.changedTouches[0];
@@ -87,7 +82,6 @@ export class Player {
 
   update(bullets, dt) {
     if (this._touchActive) {
-      // Delta already applied in touchmove event; just auto-fire
       this.shooting = true;
     } else if (this.mouse) {
       const dx = this.mouse.x - this.x;
@@ -99,7 +93,6 @@ export class Player {
         this.y += (dy / dist) * spd;
       }
     } else {
-      // Keyboard
       if (this.keys['ArrowLeft']  || this.keys['KeyA']) this.x -= SPEED * dt;
       if (this.keys['ArrowRight'] || this.keys['KeyD']) this.x += SPEED * dt;
       if (this.keys['ArrowUp']    || this.keys['KeyW']) this.y -= SPEED * dt;
@@ -107,13 +100,11 @@ export class Player {
       this.shooting = true;
     }
 
-    // Clamp
     this.x = Math.max(this.width / 2, Math.min(CANVAS_W - this.width / 2, this.x));
     this.y = Math.max(this.height / 2, Math.min(CANVAS_H - this.height / 2, this.y));
 
     if (this.invincible > 0) this.invincible -= dt;
 
-    // Shoot
     if (this.shooting) {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
@@ -137,13 +128,15 @@ export class Player {
     }
   }
 
+  /** Override: uses invincibility frames instead of removing hp directly. */
   hit() {
     if (this.invincible > 0) return;
-    this.lives--;
+    this.hp--;
     this.invincible = 120;
-    if (this.lives <= 0) this.dead = true;
+    if (this.hp <= 0) this.dead = true;
   }
 
+  /** Override: tighter hitbox (35% × 40% of sprite size). */
   getBounds() {
     const hw = this.width * 0.35;
     const hh = this.height * 0.4;
@@ -158,7 +151,6 @@ export class Player {
 
     ctx.shadowColor = '#08f';
     ctx.shadowBlur = 18;
-
     ctx.fillStyle = '#4af';
     ctx.beginPath();
     ctx.moveTo(0, -this.height / 2);
