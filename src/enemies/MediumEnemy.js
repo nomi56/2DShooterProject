@@ -5,7 +5,7 @@ const CANVAS_H = 640;
 
 export class MediumEnemy extends Character {
   constructor(x, y, hpMult = 1) {
-    super(x, y, 44, 38, 10, hpMult);
+    super(x, y, 44, 38, 5, hpMult);
     this.score = 400;
     this.t = 0;
     this.baseX = x;

@@ -6,7 +6,7 @@ const CANVAS_H = 640;
 
 export class SmallEnemy extends Character {
   constructor(x, y, hpMult = 1) {
-    super(x, y, 28, 24, 2, hpMult);
+    super(x, y, 28, 24, 1, hpMult);
     this.score = 100;
     this.speed = 1.5 + Math.random();
     this.vy = this.speed;

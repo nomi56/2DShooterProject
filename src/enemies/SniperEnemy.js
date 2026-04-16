@@ -6,7 +6,7 @@ const CANVAS_H = 640;
 /** Aims shots directly at the player position when firing. */
 export class SniperEnemy extends Character {
   constructor(x, y, hpMult = 1) {
-    super(x, y, 30, 28, 6, hpMult);
+    super(x, y, 30, 28, 3, hpMult);
     this.score = 200;
     this.targetY = 60 + Math.random() * 90;
     this.vy = 1.2;
