@@ -52,10 +52,27 @@ canvas.addEventListener('touchstart', (e) => {
 }, { passive: false });
 
 // ─── Main loop ────────────────────────────────────────────────────────────────
-function loop() {
+const FIXED_DT = 1000 / 60; // always update at 60fps regardless of display rate
+let lastTime = 0;
+let accumulator = 0;
+
+function loop(timestamp) {
   requestAnimationFrame(loop);
 
-  // Always draw background
+  const elapsed = timestamp - lastTime;
+  lastTime = timestamp;
+  // Cap to 200ms to avoid spiral-of-death after tab is backgrounded
+  accumulator += Math.min(elapsed, 200);
+
+  // Run as many fixed-step updates as needed to catch up
+  while (accumulator >= FIXED_DT) {
+    if (state === STATE.PLAYING) {
+      _update();
+    }
+    accumulator -= FIXED_DT;
+  }
+
+  // Draw once per animation frame
   stage.drawBackground(ctx);
 
   if (state === STATE.TITLE) {
@@ -63,80 +80,13 @@ function loop() {
     return;
   }
 
+  // ── Draw ──
   if (state === STATE.PLAYING) {
-    // Update
-    player.update(bullets);
-
-    stage.update(bullets, spawnExplosion, particles);
-
-    // Update bullets
-    for (const b of bullets) b.update();
-
-    // Remove off-screen bullets
-    bullets = bullets.filter(b => !b.dead && b.x > -20 && b.x < W + 20 && b.y > -40 && b.y < H + 40);
-
-    // Update particles
-    for (const p of particles) p.update();
-    particles = particles.filter(p => !p.dead);
-
-    // ── Collision: player bullets vs enemies ──
-    for (const b of bullets) {
-      if (!b.isPlayer) continue;
-      for (const e of stage.enemies) {
-        if (e.dead) continue;
-        if (rectsOverlap(b.getBounds(), e.getBounds())) {
-          b.dead = true;
-          e.hit(b.power);
-          if (e.dead) player.score += e.score;
-          spawnExplosion(particles, b.x, b.y, 6, '#ff8');
-        }
-      }
-    }
-
-    // ── Collision: enemy bullets + enemies vs player ──
-    if (player.invincible === 0) {
-      const pb = player.getBounds();
-      for (const b of bullets) {
-        if (b.isPlayer || b.dead) continue;
-        if (rectsOverlap(b.getBounds(), pb)) {
-          b.dead = true;
-          player.hit();
-          spawnExplosion(particles, player.x, player.y, 10, '#4af');
-        }
-      }
-      // Contact with enemies
-      for (const e of stage.enemies) {
-        if (e.dead) continue;
-        if (rectsOverlap(e.getBounds(), pb)) {
-          player.hit();
-          spawnExplosion(particles, player.x, player.y, 10, '#4af');
-        }
-      }
-    }
-
-    // ── Collision: power-ups vs player ──
-    const pb = player.getBounds();
-    for (const pu of stage.powerUps) {
-      if (pu.dead) continue;
-      if (rectsOverlap(pu.getBounds(), pb)) {
-        pu.dead = true;
-        if (player.powerLevel < 3) player.powerLevel++;
-      }
-    }
-
-    // ── Draw ──
     stage.drawForeground(ctx);
     for (const b of bullets) b.draw(ctx);
     for (const p of particles) p.draw(ctx);
     player.draw(ctx);
     drawHUD(ctx, player);
-
-    // ── State transitions ──
-    if (player.dead) {
-      state = STATE.GAMEOVER;
-    } else if (stage.cleared) {
-      state = STATE.CLEAR;
-    }
   }
 
   if (state === STATE.GAMEOVER) {
@@ -147,6 +97,68 @@ function loop() {
   if (state === STATE.CLEAR) {
     stage.drawForeground(ctx);
     drawStageClear(ctx, player.score);
+  }
+}
+
+function _update() {
+  player.update(bullets);
+  stage.update(bullets, spawnExplosion, particles);
+
+  for (const b of bullets) b.update();
+  bullets = bullets.filter(b => !b.dead && b.x > -20 && b.x < W + 20 && b.y > -40 && b.y < H + 40);
+
+  for (const p of particles) p.update();
+  particles = particles.filter(p => !p.dead);
+
+  // ── Collision: player bullets vs enemies ──
+  for (const b of bullets) {
+    if (!b.isPlayer) continue;
+    for (const e of stage.enemies) {
+      if (e.dead) continue;
+      if (rectsOverlap(b.getBounds(), e.getBounds())) {
+        b.dead = true;
+        e.hit(b.power);
+        if (e.dead) player.score += e.score;
+        spawnExplosion(particles, b.x, b.y, 6, '#ff8');
+      }
+    }
+  }
+
+  // ── Collision: enemy bullets + enemies vs player ──
+  if (player.invincible === 0) {
+    const pb = player.getBounds();
+    for (const b of bullets) {
+      if (b.isPlayer || b.dead) continue;
+      if (rectsOverlap(b.getBounds(), pb)) {
+        b.dead = true;
+        player.hit();
+        spawnExplosion(particles, player.x, player.y, 10, '#4af');
+      }
+    }
+    for (const e of stage.enemies) {
+      if (e.dead) continue;
+      if (rectsOverlap(e.getBounds(), pb)) {
+        player.hit();
+        spawnExplosion(particles, player.x, player.y, 10, '#4af');
+      }
+    }
+  }
+
+  // ── Collision: power-ups vs player ──
+  const pb = player.getBounds();
+  for (const pu of stage.powerUps) {
+    if (pu.dead) continue;
+    if (rectsOverlap(pu.getBounds(), pb)) {
+      pu.dead = true;
+      if (player.powerLevel < 3) player.powerLevel++;
+    }
+  }
+
+  // ── State transitions ──
+  if (player.dead) {
+    state = STATE.GAMEOVER;
+  } else if (stage.cleared) {
+    state = STATE.CLEAR;
   }
 }
 
