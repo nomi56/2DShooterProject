@@ -167,4 +167,4 @@ function _update(dt) {
   else if (stage.cleared) state = STATE.CLEAR;
 }
 
-loop();
+requestAnimationFrame(loop);
