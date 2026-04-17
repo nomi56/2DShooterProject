@@ -14,7 +14,7 @@ export class Bullet {
 
   _initMesh() {
     const color = this.isPlayer ? 0x00ffff : 0xff4444;
-    const mat = new THREE.MeshBasicMaterial({
+    const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide,
       color,
       blending: THREE.AdditiveBlending,
       transparent: true,

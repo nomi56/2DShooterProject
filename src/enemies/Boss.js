@@ -27,7 +27,7 @@ export class Boss extends Character {
     // Ellipse body
     const bodyShape = new THREE.Shape();
     bodyShape.absellipse(0, 0, this.width / 2, this.height / 2, 0, Math.PI * 2, false, 0);
-    this._bodyMat  = new THREE.MeshBasicMaterial({ color: 0xcc6622 });
+    this._bodyMat  = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xcc6622 });
     this._bodyMesh = new THREE.Mesh(new THREE.ShapeGeometry(bodyShape), this._bodyMat);
     this.mesh.add(this._bodyMesh);
 
@@ -39,7 +39,7 @@ export class Boss extends Character {
     lwShape.closePath();
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(lwShape),
-      new THREE.MeshBasicMaterial({ color: 0xaa4444 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xaa4444 }),
     ));
 
     // Right wing
@@ -50,11 +50,11 @@ export class Boss extends Character {
     rwShape.closePath();
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(rwShape),
-      new THREE.MeshBasicMaterial({ color: 0xaa4444 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xaa4444 }),
     ));
 
     // Animated core
-    this._coreMat  = new THREE.MeshBasicMaterial({
+    this._coreMat  = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide,
       color: 0xff0000,
       blending: THREE.AdditiveBlending,
       transparent: true,

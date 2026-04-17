@@ -33,13 +33,13 @@ export class SniperEnemy extends Character {
     diamondShape.closePath();
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(diamondShape),
-      new THREE.MeshBasicMaterial({ color: 0xbb0066 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xbb0066 }),
     ));
 
     // Inner highlight
     this.mesh.add(new THREE.Mesh(
       new THREE.CircleGeometry(5, 12),
-      new THREE.MeshBasicMaterial({ color: 0xff44cc }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xff44cc }),
     ));
   }
 

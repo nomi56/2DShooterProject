@@ -15,7 +15,7 @@ export class Particle {
     const c   = new THREE.Color(color || `hsl(${Math.random() * 60 + 10},100%,60%)`);
     const r   = Math.random() * 4 + 1;
     const geo = new THREE.CircleGeometry(r, 8);
-    this._mat = new THREE.MeshBasicMaterial({
+    this._mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide,
       color: c,
       transparent: true,
       blending: THREE.AdditiveBlending,

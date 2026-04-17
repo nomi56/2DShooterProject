@@ -47,7 +47,7 @@ export class Player extends Character {
     bodyShape.closePath();
     this._bodyMesh = new THREE.Mesh(
       new THREE.ShapeGeometry(bodyShape),
-      new THREE.MeshBasicMaterial({ color: 0x44aaff }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x44aaff }),
     );
     this.mesh.add(this._bodyMesh);
 
@@ -56,7 +56,7 @@ export class Player extends Character {
     cockpitShape.absellipse(0, -4, 6, 10, 0, Math.PI * 2, false, 0);
     this._cockpitMesh = new THREE.Mesh(
       new THREE.ShapeGeometry(cockpitShape),
-      new THREE.MeshBasicMaterial({ color: 0xaaeeff }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xaaeeff }),
     );
     this._cockpitMesh.position.z = 0.1;
     this.mesh.add(this._cockpitMesh);
@@ -67,7 +67,7 @@ export class Player extends Character {
     flameShape.lineTo(8,  this.height / 2);
     flameShape.lineTo(0,  this.height / 2 + 14);
     flameShape.closePath();
-    this._flameMat = new THREE.MeshBasicMaterial({
+    this._flameMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide,
       color: 0xffaa00,
       blending: THREE.AdditiveBlending,
       transparent: true,

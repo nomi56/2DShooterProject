@@ -26,7 +26,7 @@ export class PowerUp {
     this.mesh = new THREE.Group();
     this.mesh.position.z = 4;
     const color = POWERUP_COLORS[this.type];
-    const mat   = new THREE.MeshBasicMaterial({
+    const mat   = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide,
       color,
       blending: THREE.AdditiveBlending,
       transparent: true,
@@ -76,7 +76,7 @@ export class PowerUp {
     this._labelTex  = new THREE.CanvasTexture(lc);
     this._labelMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(14, 14),
-      new THREE.MeshBasicMaterial({ map: this._labelTex, transparent: true }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: this._labelTex, transparent: true }),
     );
     this._labelMesh.position.z = 0.1;
     this.mesh.add(this._labelMesh);

@@ -34,25 +34,25 @@ export class MediumEnemy extends Character {
     hexShape.closePath();
     this._bodyMesh = new THREE.Mesh(
       new THREE.ShapeGeometry(hexShape),
-      new THREE.MeshBasicMaterial({ color: 0x8844cc }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x8844cc }),
     );
     this.mesh.add(this._bodyMesh);
 
     // Core circle
     this.mesh.add(new THREE.Mesh(
       new THREE.CircleGeometry(10, 16),
-      new THREE.MeshBasicMaterial({ color: 0xdd88ff }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xdd88ff }),
     ));
 
     // HP bar
     this._hpBgMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(this.width, 4),
-      new THREE.MeshBasicMaterial({ color: 0x333333 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x333333 }),
     );
     this._hpBgMesh.position.set(0, -this.height / 2 - 8, 0.1);
     this.mesh.add(this._hpBgMesh);
 
-    this._hpFgMat  = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    this._hpFgMat  = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x00ff00 });
     this._hpFgMesh = new THREE.Mesh(new THREE.PlaneGeometry(this.width, 4), this._hpFgMat);
     this._hpFgMesh.position.set(0, -this.height / 2 - 8, 0.2);
     this.mesh.add(this._hpFgMesh);

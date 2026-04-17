@@ -33,14 +33,14 @@ export class SmallEnemy extends Character {
     bodyShape.closePath();
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(bodyShape),
-      new THREE.MeshBasicMaterial({ color: 0xff8844 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xff8844 }),
     ));
 
     const coreShape = new THREE.Shape();
     coreShape.absellipse(0, 0, 5, 8, 0, Math.PI * 2, false, 0);
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(coreShape),
-      new THREE.MeshBasicMaterial({ color: 0xffccaa }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffccaa }),
     ));
   }
 

@@ -26,13 +26,13 @@ export class TankEnemy extends Character {
     // Outer hull
     this.mesh.add(new THREE.Mesh(
       new THREE.PlaneGeometry(this.width, this.height),
-      new THREE.MeshBasicMaterial({ color: 0x226644 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x226644 }),
     ));
 
     // Armor plate
     const plateMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(this.width - 10, this.height - 10),
-      new THREE.MeshBasicMaterial({ color: 0x339966 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x339966 }),
     );
     plateMesh.position.z = 0.1;
     this.mesh.add(plateMesh);
@@ -40,7 +40,7 @@ export class TankEnemy extends Character {
     // Cannon barrel
     const barrelMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(10, 18),
-      new THREE.MeshBasicMaterial({ color: 0x11aa33 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x11aa33 }),
     );
     barrelMesh.position.set(0, this.height / 2 - 1, 0.2);
     this.mesh.add(barrelMesh);
@@ -48,12 +48,12 @@ export class TankEnemy extends Character {
     // HP bar background
     this._hpBgMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(this.width, 4),
-      new THREE.MeshBasicMaterial({ color: 0x333333 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x333333 }),
     );
     this._hpBgMesh.position.set(0, -this.height / 2 - 8, 0.1);
     this.mesh.add(this._hpBgMesh);
 
-    this._hpFgMat  = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    this._hpFgMat  = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x00ff00 });
     this._hpFgMesh = new THREE.Mesh(new THREE.PlaneGeometry(this.width, 4), this._hpFgMat);
     this._hpFgMesh.position.set(0, -this.height / 2 - 8, 0.2);
     this.mesh.add(this._hpFgMesh);
