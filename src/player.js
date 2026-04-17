@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { Character } from './character.js';
 import { Bullet } from './bullet.js';
 
@@ -5,38 +6,76 @@ const CANVAS_W = 480;
 const CANVAS_H = 640;
 const SPEED = 4;
 
-// Fire rate: shoot interval (dt units) per level 1–10
 const FIRE_RATE_INTERVALS = [12, 10, 8, 6, 5, 4, 3, 2.5, 2, 1.5];
-// Bullet speed multiplier per level 1–10
 const BULLET_SPEED_MULTS  = [1.0, 1.3, 1.6, 1.9, 2.2, 2.5, 2.8, 3.1, 3.4, 3.7];
-const MAX_LEVEL = 10;
 
 export class Player extends Character {
-  constructor() {
-    super(CANVAS_W / 2, CANVAS_H - 80, 32, 36, 3); // hp=3 represents lives
-    this.invincible = 0;
-    this.shootTimer = 0;
-    this.powerLevel       = 1; // spread   1–MAX_LEVEL
-    this.fireRateLevel    = 1; // interval 1–MAX_LEVEL
-    this.bulletSpeedLevel = 1; // speed    1–MAX_LEVEL
-
-    // Input state
-    this.keys = {};
-    this.mouse = null;
+  constructor(scene) {
+    super(CANVAS_W / 2, CANVAS_H - 80, 32, 36, 3);
+    this._scene        = scene;
+    this._disposed     = false;
+    this.invincible    = 0;
+    this.shootTimer    = 0;
+    this.powerLevel       = 1;
+    this.fireRateLevel    = 1;
+    this.bulletSpeedLevel = 1;
+    this.keys     = {};
+    this.mouse    = null;
     this.shooting = false;
-
-    // Touch state
     this._touchActive = false;
-    this._lastTouchX = 0;
-    this._lastTouchY = 0;
-
+    this._lastTouchX  = 0;
+    this._lastTouchY  = 0;
+    this._initMesh();
+    scene.add(this.mesh);
     this._bindInput();
   }
 
-  /** Expose hp as lives for HUD compatibility. */
-  get lives()        { return this.hp; }
-  get shootInterval(){ return FIRE_RATE_INTERVALS[this.fireRateLevel - 1]; }
+  get lives()          { return this.hp; }
+  get shootInterval()  { return FIRE_RATE_INTERVALS[this.fireRateLevel - 1]; }
   get bulletSpeedMult(){ return BULLET_SPEED_MULTS[this.bulletSpeedLevel - 1]; }
+
+  _initMesh() {
+    this.mesh = new THREE.Group();
+    this.mesh.position.z = 5;
+
+    // Main body triangle
+    const bodyShape = new THREE.Shape();
+    bodyShape.moveTo(0, -this.height / 2);
+    bodyShape.lineTo(this.width / 2, this.height / 2);
+    bodyShape.lineTo(0, this.height * 0.3);
+    bodyShape.lineTo(-this.width / 2, this.height / 2);
+    bodyShape.closePath();
+    this._bodyMesh = new THREE.Mesh(
+      new THREE.ShapeGeometry(bodyShape),
+      new THREE.MeshBasicMaterial({ color: 0x44aaff }),
+    );
+    this.mesh.add(this._bodyMesh);
+
+    // Cockpit ellipse
+    const cockpitShape = new THREE.Shape();
+    cockpitShape.absellipse(0, -4, 6, 10, 0, Math.PI * 2, false, 0);
+    this._cockpitMesh = new THREE.Mesh(
+      new THREE.ShapeGeometry(cockpitShape),
+      new THREE.MeshBasicMaterial({ color: 0xaaeeff }),
+    );
+    this._cockpitMesh.position.z = 0.1;
+    this.mesh.add(this._cockpitMesh);
+
+    // Thruster flame
+    const flameShape = new THREE.Shape();
+    flameShape.moveTo(-8, this.height / 2);
+    flameShape.lineTo(8,  this.height / 2);
+    flameShape.lineTo(0,  this.height / 2 + 14);
+    flameShape.closePath();
+    this._flameMat = new THREE.MeshBasicMaterial({
+      color: 0xffaa00,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+    });
+    this._flameMesh = new THREE.Mesh(new THREE.ShapeGeometry(flameShape), this._flameMat);
+    this._flameMesh.position.z = -0.1;
+    this.mesh.add(this._flameMesh);
+  }
 
   _bindInput() {
     window.addEventListener('keydown', (e) => {
@@ -50,7 +89,6 @@ export class Player extends Character {
 
     const canvas = document.getElementById('gameCanvas');
 
-    // Mouse
     canvas.addEventListener('mousemove', (e) => {
       const rect = canvas.getBoundingClientRect();
       this.mouse = {
@@ -62,7 +100,6 @@ export class Player extends Character {
     canvas.addEventListener('mouseup',    () => { this.shooting = false; });
     canvas.addEventListener('mouseleave', () => { this.mouse = null; });
 
-    // Touch — swipe delta movement, auto-fire while touching
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       const t = e.changedTouches[0];
@@ -127,23 +164,19 @@ export class Player extends Character {
     const bx  = this.x;
     const by  = this.y - this.height / 2;
     const spd = this.bulletSpeedMult;
-    // Center bullet
-    bullets.push(new Bullet(bx, by, 0, -12 * spd, true, 1));
-    // Each extra power level adds a symmetric pair at a wider angle
-    // Position: evenly distributed within ±(width×0.75), angle: 0.03 rad/pair
-    const maxHalfSpread = this.width * 0.75; // half of 1.5× player width
+    bullets.push(new Bullet(this._scene, bx, by, 0, -12 * spd, true, 1));
+    const maxHalfSpread = this.width * 0.75;
     const pairs = this.powerLevel - 1;
     for (let i = 1; i <= pairs; i++) {
       const angle = i * 0.03;
       const vy    = -12 * spd * Math.cos(angle);
       const vx    =  12 * spd * Math.sin(angle);
       const xOff  = pairs > 0 ? (i / pairs) * maxHalfSpread : 0;
-      bullets.push(new Bullet(bx - xOff, by, -vx, vy, true, 1));
-      bullets.push(new Bullet(bx + xOff, by,  vx, vy, true, 1));
+      bullets.push(new Bullet(this._scene, bx - xOff, by, -vx, vy, true, 1));
+      bullets.push(new Bullet(this._scene, bx + xOff, by,  vx, vy, true, 1));
     }
   }
 
-  /** Override: uses invincibility frames instead of removing hp directly. */
   hit() {
     if (this.invincible > 0) return;
     this.hp--;
@@ -151,45 +184,26 @@ export class Player extends Character {
     if (this.hp <= 0) this.dead = true;
   }
 
-  /** Override: tighter hitbox (35% × 40% of sprite size). */
   getBounds() {
     const hw = this.width * 0.35;
     const hh = this.height * 0.4;
     return { x: this.x - hw, y: this.y - hh, w: hw * 2, h: hh * 2 };
   }
 
-  draw(ctx) {
-    if (this.invincible > 0 && Math.floor(this.invincible / 4) % 2 === 0) return;
+  updateMesh() {
+    this.mesh.visible = !(this.invincible > 0 && Math.floor(this.invincible / 4) % 2 === 0);
+    this.mesh.position.set(this.x, this.y, 5);
+    // Animate flame color
+    this._flameMat.color.setHSL((40 + Math.random() * 20) / 360, 1, 0.6);
+  }
 
-    ctx.save();
-    ctx.translate(this.x, this.y);
-
-    ctx.shadowColor = '#08f';
-    ctx.shadowBlur = 18;
-    ctx.fillStyle = '#4af';
-    ctx.beginPath();
-    ctx.moveTo(0, -this.height / 2);
-    ctx.lineTo(this.width / 2, this.height / 2);
-    ctx.lineTo(0, this.height * 0.3);
-    ctx.lineTo(-this.width / 2, this.height / 2);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.fillStyle = '#aef';
-    ctx.beginPath();
-    ctx.ellipse(0, -4, 6, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.shadowColor = '#fa0';
-    ctx.shadowBlur = 14;
-    ctx.fillStyle = `hsl(${40 + Math.random() * 20}, 100%, 60%)`;
-    ctx.beginPath();
-    ctx.moveTo(-8, this.height / 2);
-    ctx.lineTo(8, this.height / 2);
-    ctx.lineTo(0, this.height / 2 + 10 + Math.random() * 6);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
+  dispose() {
+    if (this._disposed) return;
+    this._disposed = true;
+    this._scene.remove(this.mesh);
+    this.mesh.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) obj.material.dispose();
+    });
   }
 }

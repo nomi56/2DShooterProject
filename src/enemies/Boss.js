@@ -1,23 +1,71 @@
+import * as THREE from 'three';
 import { Character } from '../character.js';
 import { Bullet } from '../bullet.js';
 
 const CANVAS_W = 480;
 
 export class Boss extends Character {
-  constructor() {
+  constructor(scene) {
     super(CANVAS_W / 2, -80, 100, 80, 1500);
-    this.score = 5000;
-    this.t = 0;
+    this._isBoss   = true;
+    this.score     = 5000;
+    this.t         = 0;
     this.shootTimer = 40;
-    this.targetY = 110;
-    this.vy = 1.5;
-    this.angle = 0;      // for draw animation
-    this.fanSide = 1;    // 1 = right side, -1 = left side (alternates each burst)
+    this.targetY   = 110;
+    this.vy        = 1.5;
+    this.fanSide   = 1;
+    this._scene    = scene;
+    this._disposed = false;
+    this._initMesh();
+    scene.add(this.mesh);
+  }
+
+  _initMesh() {
+    this.mesh = new THREE.Group();
+    this.mesh.position.z = 0;
+
+    // Ellipse body
+    const bodyShape = new THREE.Shape();
+    bodyShape.absellipse(0, 0, this.width / 2, this.height / 2, 0, Math.PI * 2, false, 0);
+    this._bodyMat  = new THREE.MeshBasicMaterial({ color: 0xcc6622 });
+    this._bodyMesh = new THREE.Mesh(new THREE.ShapeGeometry(bodyShape), this._bodyMat);
+    this.mesh.add(this._bodyMesh);
+
+    // Left wing
+    const lwShape = new THREE.Shape();
+    lwShape.moveTo(-this.width / 2, 0);
+    lwShape.lineTo(-this.width * 0.9, -20);
+    lwShape.lineTo(-this.width * 0.9, 30);
+    lwShape.closePath();
+    this.mesh.add(new THREE.Mesh(
+      new THREE.ShapeGeometry(lwShape),
+      new THREE.MeshBasicMaterial({ color: 0xaa4444 }),
+    ));
+
+    // Right wing
+    const rwShape = new THREE.Shape();
+    rwShape.moveTo(this.width / 2, 0);
+    rwShape.lineTo(this.width * 0.9, -20);
+    rwShape.lineTo(this.width * 0.9, 30);
+    rwShape.closePath();
+    this.mesh.add(new THREE.Mesh(
+      new THREE.ShapeGeometry(rwShape),
+      new THREE.MeshBasicMaterial({ color: 0xaa4444 }),
+    ));
+
+    // Animated core
+    this._coreMat  = new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+    });
+    this._coreMesh = new THREE.Mesh(new THREE.CircleGeometry(18, 16), this._coreMat);
+    this._coreMesh.position.z = 0.2;
+    this.mesh.add(this._coreMesh);
   }
 
   update(bullets, dt, playerX = 240, playerY = 500) {
     this.t += dt;
-    this.angle += 0.02 * dt;
 
     if (this.y < this.targetY) {
       this.y += this.vy * dt;
@@ -33,72 +81,33 @@ export class Boss extends Character {
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
-      // Fire from alternating left / right position, fan aimed at player
-      const fireX = CANVAS_W / 2 + this.fanSide * 150;
-      const fireY = this.y;
+      const fireX    = CANVAS_W / 2 + this.fanSide * 150;
+      const fireY    = this.y;
       const aimAngle = Math.atan2(playerY - fireY, playerX - fireX);
-      const spread   = Math.PI / 2.4; // 75°
+      const spread   = Math.PI / 2.4;
       for (let i = 0; i < fanCount; i++) {
         const a = aimAngle - spread / 2 + (i / (fanCount - 1)) * spread;
-        bullets.push(new Bullet(fireX, fireY, Math.cos(a) * spd, Math.sin(a) * spd, false));
+        bullets.push(new Bullet(this._scene, fireX, fireY, Math.cos(a) * spd, Math.sin(a) * spd, false));
       }
-      this.fanSide *= -1;
-      this.shootTimer = interval;
+      this.fanSide    *= -1;
+      this.shootTimer  = interval;
     }
   }
 
-  draw(ctx) {
-    ctx.save();
-    ctx.translate(this.x, this.y);
+  updateMesh() {
+    this.mesh.position.set(this.x, this.y, 0);
+    const hpRatio = this.hp / this.maxHp;
+    this._bodyMat.color.setHex(hpRatio < 0.5 ? 0xcc2222 : 0xcc6622);
+    this._coreMat.color.setHSL((this.t * 4 % 360) / 360, 1, 0.7);
+  }
 
-    const pulse    = Math.sin(this.t * 0.1) * 0.15 + 0.85;
-    const hpRatio  = this.hp / this.maxHp;
-    ctx.shadowColor = hpRatio < 0.5 ? '#f00' : '#f60';
-    ctx.shadowBlur = 24 * pulse;
-
-    ctx.fillStyle = hpRatio < 0.5 ? '#c22' : '#c62';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#a44';
-    ctx.beginPath();
-    ctx.moveTo(-this.width / 2, 0);
-    ctx.lineTo(-this.width * 0.9, -20);
-    ctx.lineTo(-this.width * 0.9, 30);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(this.width / 2, 0);
-    ctx.lineTo(this.width * 0.9, -20);
-    ctx.lineTo(this.width * 0.9, 30);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.fillStyle = `hsl(${this.t * 4 % 360}, 100%, 70%)`;
-    ctx.beginPath();
-    ctx.arc(0, 0, 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-
-    // Boss HP bar (top of screen)
-    ctx.save();
-    const barW = CANVAS_W - 40;
-    const ratio = this.hp / this.maxHp;
-    ctx.fillStyle = '#111';
-    ctx.fillRect(20, 12, barW, 10);
-    const grad = ctx.createLinearGradient(20, 0, 20 + barW * ratio, 0);
-    grad.addColorStop(0, '#f00');
-    grad.addColorStop(1, '#ff0');
-    ctx.fillStyle = grad;
-    ctx.fillRect(20, 12, barW * ratio, 10);
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(20, 12, barW, 10);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 9px monospace';
-    ctx.fillText('BOSS', 22, 21);
-    ctx.restore();
+  dispose() {
+    if (this._disposed) return;
+    this._disposed = true;
+    this._scene.remove(this.mesh);
+    this.mesh.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) obj.material.dispose();
+    });
   }
 }

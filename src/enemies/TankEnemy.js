@@ -1,18 +1,62 @@
+import * as THREE from 'three';
 import { Character } from '../character.js';
 import { Bullet } from '../bullet.js';
 
 const CANVAS_H = 640;
 
-/** High-HP slow enemy that fires a wide 5-way spread. */
 export class TankEnemy extends Character {
-  constructor(x, y, hpMult = 1) {
+  constructor(scene, x, y, hpMult = 1) {
     super(x, y, 52, 46, 13, hpMult);
-    this.score = 600;
-    this.vy = 0.5;
-    this.baseX = x;
-    this.t = 0;
+    this.score  = 600;
+    this.vy     = 0.5;
+    this.baseX  = x;
+    this.t      = 0;
     this.shootTimer = 80;
-    this.phase = 0;
+    this.phase  = 0;
+    this._scene    = scene;
+    this._disposed = false;
+    this._initMesh();
+    scene.add(this.mesh);
+  }
+
+  _initMesh() {
+    this.mesh = new THREE.Group();
+    this.mesh.position.z = 0;
+
+    // Outer hull
+    this.mesh.add(new THREE.Mesh(
+      new THREE.PlaneGeometry(this.width, this.height),
+      new THREE.MeshBasicMaterial({ color: 0x226644 }),
+    ));
+
+    // Armor plate
+    const plateMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(this.width - 10, this.height - 10),
+      new THREE.MeshBasicMaterial({ color: 0x339966 }),
+    );
+    plateMesh.position.z = 0.1;
+    this.mesh.add(plateMesh);
+
+    // Cannon barrel
+    const barrelMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(10, 18),
+      new THREE.MeshBasicMaterial({ color: 0x11aa33 }),
+    );
+    barrelMesh.position.set(0, this.height / 2 - 1, 0.2);
+    this.mesh.add(barrelMesh);
+
+    // HP bar background
+    this._hpBgMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(this.width, 4),
+      new THREE.MeshBasicMaterial({ color: 0x333333 }),
+    );
+    this._hpBgMesh.position.set(0, -this.height / 2 - 8, 0.1);
+    this.mesh.add(this._hpBgMesh);
+
+    this._hpFgMat  = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    this._hpFgMesh = new THREE.Mesh(new THREE.PlaneGeometry(this.width, 4), this._hpFgMat);
+    this._hpFgMesh.position.set(0, -this.height / 2 - 8, 0.2);
+    this.mesh.add(this._hpFgMesh);
   }
 
   update(bullets, dt) {
@@ -30,10 +74,9 @@ export class TankEnemy extends Character {
     if (this.phase === 1) {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
-        // 5-way spread
         for (let i = -2; i <= 2; i++) {
           const a = (i / 4) * 0.7;
-          bullets.push(new Bullet(
+          bullets.push(new Bullet(this._scene,
             this.x, this.y + this.height / 2,
             Math.sin(a) * 3.5, Math.cos(a) * 3.5, false));
         }
@@ -42,32 +85,21 @@ export class TankEnemy extends Character {
     }
   }
 
-  draw(ctx) {
-    ctx.save();
-    ctx.translate(this.x, this.y);
-
-    ctx.shadowColor = '#4d4';
-    ctx.shadowBlur = 14;
-
-    // Outer hull
-    ctx.fillStyle = '#264';
-    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-
-    // Armor plate
-    ctx.fillStyle = '#396';
-    ctx.fillRect(-this.width / 2 + 5, -this.height / 2 + 5, this.width - 10, this.height - 10);
-
-    // Cannon barrel
-    ctx.fillStyle = '#1a3';
-    ctx.fillRect(-5, this.height / 2 - 10, 10, 18);
-
-    // HP bar
+  updateMesh() {
+    this.mesh.position.set(this.x, this.y, 0);
     const ratio = this.hp / this.maxHp;
-    ctx.fillStyle = '#333';
-    ctx.fillRect(-this.width / 2, -this.height / 2 - 8, this.width, 4);
-    ctx.fillStyle = `hsl(${ratio * 120}, 100%, 50%)`;
-    ctx.fillRect(-this.width / 2, -this.height / 2 - 8, this.width * ratio, 4);
+    this._hpFgMesh.scale.x = ratio;
+    this._hpFgMesh.position.x = this.width * (ratio - 1) / 2;
+    this._hpFgMat.color.setHSL(ratio * 120 / 360, 1, 0.5);
+  }
 
-    ctx.restore();
+  dispose() {
+    if (this._disposed) return;
+    this._disposed = true;
+    this._scene.remove(this.mesh);
+    this.mesh.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) obj.material.dispose();
+    });
   }
 }

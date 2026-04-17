@@ -3,14 +3,12 @@ import { BUILD } from './version.js';
 const CANVAS_W = 480;
 const CANVAS_H = 640;
 
-export function drawHUD(ctx, player) {
-  // Score
+export function drawHUD(ctx, player, boss = null) {
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 14px monospace';
   ctx.textAlign = 'left';
   ctx.fillText(`SCORE: ${player.score}`, 10, 30);
 
-  // Lives (ship icons)
   ctx.fillStyle = '#4af';
   ctx.font = '13px monospace';
   ctx.fillText('LIVES:', 10, 50);
@@ -18,7 +16,6 @@ export function drawHUD(ctx, player) {
     _drawMiniShip(ctx, 70 + i * 22, 44);
   }
 
-  // Power / FireRate / BulletSpeed levels
   ctx.font = '11px monospace';
   const MAX = 10;
   ctx.fillStyle = '#ff0';
@@ -27,6 +24,25 @@ export function drawHUD(ctx, player) {
   ctx.fillText(`RTE:${'■'.repeat(player.fireRateLevel)}${'□'.repeat(MAX - player.fireRateLevel)}`, 10, 80);
   ctx.fillStyle = '#f80';
   ctx.fillText(`SPD:${'■'.repeat(player.bulletSpeedLevel)}${'□'.repeat(MAX - player.bulletSpeedLevel)}`, 10, 94);
+
+  if (boss) {
+    const barW  = CANVAS_W - 40;
+    const ratio = boss.hp / boss.maxHp;
+    ctx.fillStyle = '#111';
+    ctx.fillRect(20, 12, barW, 10);
+    const grad = ctx.createLinearGradient(20, 0, 20 + barW * ratio, 0);
+    grad.addColorStop(0, '#f00');
+    grad.addColorStop(1, '#ff0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(20, 12, barW * ratio, 10);
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(20, 12, barW, 10);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('BOSS', 22, 21);
+  }
 }
 
 function _drawMiniShip(ctx, x, y) {
@@ -44,13 +60,10 @@ function _drawMiniShip(ctx, x, y) {
 }
 
 export function drawTitle(ctx) {
-  // Dim overlay
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
   ctx.textAlign = 'center';
-
-  // Title
   ctx.shadowColor = '#0ff';
   ctx.shadowBlur = 20;
   ctx.fillStyle = '#0ff';

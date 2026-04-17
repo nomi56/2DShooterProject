@@ -1,14 +1,27 @@
+import * as THREE from 'three';
+
 export class Particle {
-  constructor(x, y, color) {
-    this.x = x;
-    this.y = y;
+  constructor(scene, x, y, color) {
+    this.x = x; this.y = y;
     this.vx = (Math.random() - 0.5) * 4;
     this.vy = (Math.random() - 0.5) * 4 - 1;
-    this.radius = Math.random() * 4 + 1;
-    this.color = color || `hsl(${Math.random() * 60 + 10}, 100%, 60%)`;
     this.alpha = 1;
     this.decay = Math.random() * 0.03 + 0.02;
-    this.dead = false;
+    this.dead  = false;
+    this._scene    = scene;
+    this._inScene  = false;
+    this._disposed = false;
+
+    const c   = new THREE.Color(color || `hsl(${Math.random() * 60 + 10},100%,60%)`);
+    const r   = Math.random() * 4 + 1;
+    const geo = new THREE.CircleGeometry(r, 8);
+    this._mat = new THREE.MeshBasicMaterial({
+      color: c,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+    });
+    this.mesh = new THREE.Mesh(geo, this._mat);
+    this.mesh.position.z = 3;
   }
 
   update(dt) {
@@ -19,19 +32,22 @@ export class Particle {
     if (this.alpha <= 0) this.dead = true;
   }
 
-  draw(ctx) {
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, this.alpha);
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+  updateMesh() {
+    this.mesh.position.set(this.x, this.y, 3);
+    this._mat.opacity = Math.max(0, this.alpha);
+  }
+
+  dispose() {
+    if (this._disposed) return;
+    this._disposed = true;
+    if (this._inScene) this._scene.remove(this.mesh);
+    this.mesh.geometry.dispose();
+    this._mat.dispose();
   }
 }
 
-export function spawnExplosion(particles, x, y, count = 18, color) {
+export function spawnExplosion(scene, particles, x, y, count = 18, color) {
   for (let i = 0; i < count; i++) {
-    particles.push(new Particle(x, y, color));
+    particles.push(new Particle(scene, x, y, color));
   }
 }
