@@ -130,11 +130,14 @@ export class Player extends Character {
     // Center bullet
     bullets.push(new Bullet(bx, by, 0, -12 * spd, true, 1));
     // Each extra power level adds a symmetric pair at a wider angle
-    for (let i = 1; i < this.powerLevel; i++) {
-      const angle = i * 0.015; // radians spread per pair
-      const vy = -12 * spd * Math.cos(angle);
-      const vx =  12 * spd * Math.sin(angle);
-      const xOff = i * 13;
+    // Position: evenly distributed within ±(width×0.75), angle: 0.03 rad/pair
+    const maxHalfSpread = this.width * 0.75; // half of 1.5× player width
+    const pairs = this.powerLevel - 1;
+    for (let i = 1; i <= pairs; i++) {
+      const angle = i * 0.03;
+      const vy    = -12 * spd * Math.cos(angle);
+      const vx    =  12 * spd * Math.sin(angle);
+      const xOff  = pairs > 0 ? (i / pairs) * maxHalfSpread : 0;
       bullets.push(new Bullet(bx - xOff, by, -vx, vy, true, 1));
       bullets.push(new Bullet(bx + xOff, by,  vx, vy, true, 1));
     }

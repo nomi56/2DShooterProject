@@ -15,7 +15,7 @@ export class Boss extends Character {
     this.fanSide = 1;    // 1 = bottom-right fan, -1 = bottom-left fan
   }
 
-  update(bullets, dt) {
+  update(bullets, dt, playerX = 240, playerY = 500) {
     this.t += dt;
     this.angle += 0.02 * dt;
 
@@ -26,24 +26,20 @@ export class Boss extends Character {
 
     this.x = CANVAS_W / 2 + Math.sin(this.t * 0.02) * 130;
 
-    const hpRatio = this.hp / this.maxHp;
-    // Frequency: interval 80→15 as HP drops
+    const hpRatio  = this.hp / this.maxHp;
     const interval = Math.max(15, 80 * hpRatio);
-    // Density: bullet count increases in 3 tiers
     const fanCount = hpRatio > 0.5 ? 7 : hpRatio > 0.25 ? 12 : 18;
-    // Speed increases slightly as HP drops
-    const spd = hpRatio > 0.5 ? 3.5 : 4.5;
+    const spd      = hpRatio > 0.5 ? 3.5 : 4.5;
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
-      // Fan centered on bottom-right (π/4) or bottom-left (3π/4), spread ±37.5°
-      const center = Math.PI / 2 + this.fanSide * (Math.PI / 4);
-      const spread = Math.PI / 2.4; // 75° total
+      // Fan centered on the direction toward the player
+      const aimAngle = Math.atan2(playerY - this.y, playerX - this.x);
+      const spread   = Math.PI / 2.4; // 75°
       for (let i = 0; i < fanCount; i++) {
-        const a = center - spread / 2 + (i / (fanCount - 1)) * spread;
+        const a = aimAngle - spread / 2 + (i / (fanCount - 1)) * spread;
         bullets.push(new Bullet(this.x, this.y, Math.cos(a) * spd, Math.sin(a) * spd, false));
       }
-      this.fanSide *= -1; // alternate side each burst
       this.shootTimer = interval;
     }
   }
