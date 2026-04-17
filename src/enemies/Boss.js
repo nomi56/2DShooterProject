@@ -12,7 +12,7 @@ export class Boss extends Character {
     this.targetY = 110;
     this.vy = 1.5;
     this.angle = 0;      // for draw animation
-    this.fanSide = 1;    // 1 = bottom-right fan, -1 = bottom-left fan
+    this.fanSide = 1;    // 1 = right side, -1 = left side (alternates each burst)
   }
 
   update(bullets, dt, playerX = 240, playerY = 500) {
@@ -33,13 +33,16 @@ export class Boss extends Character {
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
-      // Fan centered on the direction toward the player
-      const aimAngle = Math.atan2(playerY - this.y, playerX - this.x);
+      // Fire from alternating left / right position, fan aimed at player
+      const fireX = CANVAS_W / 2 + this.fanSide * 150;
+      const fireY = this.y;
+      const aimAngle = Math.atan2(playerY - fireY, playerX - fireX);
       const spread   = Math.PI / 2.4; // 75°
       for (let i = 0; i < fanCount; i++) {
         const a = aimAngle - spread / 2 + (i / (fanCount - 1)) * spread;
-        bullets.push(new Bullet(this.x, this.y, Math.cos(a) * spd, Math.sin(a) * spd, false));
+        bullets.push(new Bullet(fireX, fireY, Math.cos(a) * spd, Math.sin(a) * spd, false));
       }
+      this.fanSide *= -1;
       this.shootTimer = interval;
     }
   }
