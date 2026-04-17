@@ -8,11 +8,11 @@ export class Boss extends Character {
     super(CANVAS_W / 2, -80, 100, 80, 1500);
     this.score = 5000;
     this.t = 0;
-    this.phase = 0;
     this.shootTimer = 40;
     this.targetY = 110;
     this.vy = 1.5;
-    this.angle = 0;
+    this.angle = 0;      // for draw animation
+    this.fanSide = 1;    // 1 = bottom-right fan, -1 = bottom-left fan
   }
 
   update(bullets, dt) {
@@ -26,28 +26,24 @@ export class Boss extends Character {
 
     this.x = CANVAS_W / 2 + Math.sin(this.t * 0.02) * 130;
 
-    // Frequency scales up as HP drops: interval 80→15
     const hpRatio = this.hp / this.maxHp;
+    // Frequency: interval 80→15 as HP drops
     const interval = Math.max(15, 80 * hpRatio);
+    // Density: bullet count increases in 3 tiers
+    const fanCount = hpRatio > 0.5 ? 7 : hpRatio > 0.25 ? 12 : 18;
+    // Speed increases slightly as HP drops
+    const spd = hpRatio > 0.5 ? 3.5 : 4.5;
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
-      // Density increases in three tiers as HP drops
-      const count = hpRatio > 0.5 ? 10 : hpRatio > 0.25 ? 20 : 36;
-
-      if (hpRatio > 0.5) {
-        // Phase 1: circular burst
-        for (let i = 0; i < count; i++) {
-          const a = (i / count) * Math.PI * 2;
-          bullets.push(new Bullet(this.x, this.y, Math.cos(a) * 3, Math.sin(a) * 3, false));
-        }
-      } else {
-        // Phase 2: spinning burst
-        for (let i = 0; i < count; i++) {
-          const a = (i / count) * Math.PI * 2 + this.angle;
-          bullets.push(new Bullet(this.x, this.y, Math.cos(a) * 4, Math.sin(a) * 4, false));
-        }
+      // Fan centered on bottom-right (π/4) or bottom-left (3π/4), spread ±37.5°
+      const center = Math.PI / 2 + this.fanSide * (Math.PI / 4);
+      const spread = Math.PI / 2.4; // 75° total
+      for (let i = 0; i < fanCount; i++) {
+        const a = center - spread / 2 + (i / (fanCount - 1)) * spread;
+        bullets.push(new Bullet(this.x, this.y, Math.cos(a) * spd, Math.sin(a) * spd, false));
       }
+      this.fanSide *= -1; // alternate side each burst
       this.shootTimer = interval;
     }
   }
@@ -56,11 +52,12 @@ export class Boss extends Character {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    const pulse = Math.sin(this.t * 0.1) * 0.15 + 0.85;
-    ctx.shadowColor = this.phase === 2 ? '#f00' : '#f60';
+    const pulse    = Math.sin(this.t * 0.1) * 0.15 + 0.85;
+    const hpRatio  = this.hp / this.maxHp;
+    ctx.shadowColor = hpRatio < 0.5 ? '#f00' : '#f60';
     ctx.shadowBlur = 24 * pulse;
 
-    ctx.fillStyle = this.phase === 2 ? '#c22' : '#c62';
+    ctx.fillStyle = hpRatio < 0.5 ? '#c22' : '#c62';
     ctx.beginPath();
     ctx.ellipse(0, 0, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
     ctx.fill();
