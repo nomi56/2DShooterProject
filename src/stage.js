@@ -190,7 +190,7 @@ export class Stage {
           e instanceof Boss ? '#f60' : '#fa0');
         // Drop a power-up every 5 kills (Boss always drops one)
         this._killCount++;
-        if (e instanceof Boss || this._killCount % 2 === 0) {
+        if (e instanceof Boss || this._killCount % 4 === 0) {
           const types = ['power', 'rate', 'speed'];
           const type = types[Math.floor(Math.random() * types.length)];
           this.powerUps.push(new PowerUp(e.x, e.y, type));

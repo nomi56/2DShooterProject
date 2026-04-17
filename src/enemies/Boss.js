@@ -24,26 +24,31 @@ export class Boss extends Character {
       return;
     }
 
-    this.phase = this.hp < this.maxHp / 2 ? 2 : 1;
     this.x = CANVAS_W / 2 + Math.sin(this.t * 0.02) * 130;
+
+    // Frequency scales up as HP drops: interval 80→15
+    const hpRatio = this.hp / this.maxHp;
+    const interval = Math.max(15, 80 * hpRatio);
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
-      if (this.phase === 1) {
-        const count = 100;
+      // Density increases in three tiers as HP drops
+      const count = hpRatio > 0.5 ? 10 : hpRatio > 0.25 ? 20 : 36;
+
+      if (hpRatio > 0.5) {
+        // Phase 1: circular burst
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2;
           bullets.push(new Bullet(this.x, this.y, Math.cos(a) * 3, Math.sin(a) * 3, false));
         }
-        this.shootTimer = 80;
       } else {
-        const count = 160;
+        // Phase 2: spinning burst
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2 + this.angle;
           bullets.push(new Bullet(this.x, this.y, Math.cos(a) * 4, Math.sin(a) * 4, false));
         }
-        this.shootTimer = 50;
       }
+      this.shootTimer = interval;
     }
   }
 

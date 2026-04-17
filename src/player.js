@@ -131,7 +131,7 @@ export class Player extends Character {
     bullets.push(new Bullet(bx, by, 0, -12 * spd, true, 1));
     // Each extra power level adds a symmetric pair at a wider angle
     for (let i = 1; i < this.powerLevel; i++) {
-      const angle = i * 0.09; // radians spread per pair
+      const angle = i * 0.03; // radians spread per pair
       const vy = -12 * spd * Math.cos(angle);
       const vx =  12 * spd * Math.sin(angle);
       const xOff = i * 13;
