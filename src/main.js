@@ -124,7 +124,7 @@ function _update(dt) {
   }
 
   // ── Collision: enemy bullets + enemies vs player ──
-  if (player.invincible === 0) {
+  if (player.invincible <= 0) {
     const pb = player.getBounds();
     for (const b of bullets) {
       if (b.isPlayer || b.dead) continue;
