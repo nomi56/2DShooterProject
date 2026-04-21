@@ -185,8 +185,8 @@ export class Player extends Character {
   }
 
   getBounds() {
-    const hw = this.width * 0.35;
-    const hh = this.height * 0.4;
+    const hw = this.width * 0.35 * (2 / 3);
+    const hh = this.height * 0.4 * (2 / 3);
     return { x: this.x - hw, y: this.y - hh, w: hw * 2, h: hh * 2 };
   }
 
