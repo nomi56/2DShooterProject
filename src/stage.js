@@ -230,8 +230,8 @@ export class Stage {
   }
 
   _densityMult() {
-    const progress = Math.min(1, this.frame / BOSS_FRAME);
-    return 1 + Math.floor(progress * 2); // 1 → 2 → 3（線形）
+    const q = Math.min(3, Math.floor((this.frame / BOSS_FRAME) * 4));
+    return [1, 2, 3, 5][q];
   }
 
   _spawnWave(w) {
