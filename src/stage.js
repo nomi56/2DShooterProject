@@ -226,7 +226,7 @@ export class Stage {
 
   _difficultyMult() {
     const q = Math.min(3, Math.floor((this.frame / BOSS_FRAME) * 4));
-    return Math.pow(2, q);
+    return Math.pow(1.5, q);
   }
 
   _densityMult() {
