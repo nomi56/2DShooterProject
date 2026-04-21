@@ -118,7 +118,7 @@ function _update(dt) {
         b.dead = true;
         e.hit(b.power);
         if (e.dead) player.score += e.score;
-        spawnExplosion(scene, particles, b.x, b.y, 6, '#ff8');
+        spawnExplosion(scene, particles, b.x, b.y, 6, '#ff8', b.power);
       }
     }
   }

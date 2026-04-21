@@ -164,7 +164,7 @@ export class Player extends Character {
     const bx  = this.x;
     const by  = this.y - this.height / 2;
     const spd = this.bulletSpeedMult;
-    bullets.push(new Bullet(this._scene, bx, by, 0, -12 * spd, true, 1));
+    bullets.push(new Bullet(this._scene, bx, by, 0, -12 * spd, true, spd));
     const maxHalfSpread = this.width * 0.75;
     const pairs = this.powerLevel - 1;
     for (let i = 1; i <= pairs; i++) {
@@ -172,8 +172,8 @@ export class Player extends Character {
       const vy    = -12 * spd * Math.cos(angle);
       const vx    =  12 * spd * Math.sin(angle);
       const xOff  = pairs > 0 ? (i / pairs) * maxHalfSpread : 0;
-      bullets.push(new Bullet(this._scene, bx - xOff, by, -vx, vy, true, 1));
-      bullets.push(new Bullet(this._scene, bx + xOff, by,  vx, vy, true, 1));
+      bullets.push(new Bullet(this._scene, bx - xOff, by, -vx, vy, true, spd));
+      bullets.push(new Bullet(this._scene, bx + xOff, by,  vx, vy, true, spd));
     }
   }
 

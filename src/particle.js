@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
 export class Particle {
-  constructor(scene, x, y, color) {
+  constructor(scene, x, y, color, speedMult = 1) {
     this.x = x; this.y = y;
-    this.vx = (Math.random() - 0.5) * 4;
-    this.vy = (Math.random() - 0.5) * 4 - 1;
+    this.vx = (Math.random() - 0.5) * 4 * speedMult;
+    this.vy = ((Math.random() - 0.5) * 4 - 1) * speedMult;
     this.alpha = 1;
     this.decay = Math.random() * 0.03 + 0.02;
     this.dead  = false;
@@ -46,8 +46,8 @@ export class Particle {
   }
 }
 
-export function spawnExplosion(scene, particles, x, y, count = 18, color) {
+export function spawnExplosion(scene, particles, x, y, count = 18, color, speedMult = 1) {
   for (let i = 0; i < count; i++) {
-    particles.push(new Particle(scene, x, y, color));
+    particles.push(new Particle(scene, x, y, color, speedMult));
   }
 }
