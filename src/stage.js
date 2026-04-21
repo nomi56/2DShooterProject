@@ -112,8 +112,12 @@ export class PowerUp {
 // ─── Wave definitions ─────────────────────────────────────────────────────────
 function buildWaves() {
   const waves = [];
-  // frame × 2 でステージ全長を2倍に
-  const add = (frame, type, x, y) => waves.push({ frame: frame * 2, type, x, y });
+  // 前半(0-700)を×5で引き延ばし、後半(700-2600)を3500-5200に圧縮
+  // → 小型敵オンリー期間を長くし、中型以降の初登場を後半に集約
+  const remap = f => f < 700
+    ? Math.round(f * 5)
+    : Math.round((f - 700) * (1700 / 1900) + 3500);
+  const add = (frame, type, x, y) => waves.push({ frame: remap(frame), type, x, y });
 
   for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
   for (let i = 0; i < 6; i++) add(300 + i * 25, 'small',  80 + i * 60, -30);
