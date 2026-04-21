@@ -229,9 +229,14 @@ export class Stage {
     return Math.pow(2, q);
   }
 
+  _densityMult() {
+    const progress = Math.min(1, this.frame / BOSS_FRAME);
+    return 1 + Math.floor(progress * 2); // 1 → 2 → 3（線形）
+  }
+
   _spawnWave(w) {
     const hpMult  = this._difficultyMult();
-    const density = Math.min(DENSITY_CAP[w.type] ?? 1, hpMult);
+    const density = Math.min(DENSITY_CAP[w.type] ?? 1, this._densityMult());
     for (let d = 0; d < density; d++) {
       const x = density === 1 ? w.x : Math.round((d + 0.5) * (CANVAS_W / density));
       let e;
