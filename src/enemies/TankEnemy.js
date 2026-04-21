@@ -6,9 +6,9 @@ const CANVAS_H = 640;
 
 export class TankEnemy extends Character {
   constructor(scene, x, y, hpMult = 1) {
-    super(x, y, 52, 46, 13, hpMult);
+    super(x, y, 52, 46, 104, hpMult);
     this.score  = 600;
-    this.vy     = 0.5;
+    this.vy     = 0.125;
     this.baseX  = x;
     this.t      = 0;
     this.shootTimer = 80;
@@ -59,7 +59,7 @@ export class TankEnemy extends Character {
     this.mesh.add(this._hpFgMesh);
   }
 
-  update(bullets, dt) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
     this.t += dt;
 
     if (this.y < 140) {
@@ -76,9 +76,10 @@ export class TankEnemy extends Character {
       if (this.shootTimer <= 0) {
         for (let i = -2; i <= 2; i++) {
           const a = (i / 4) * 0.7;
+          const spd = 3.5 * bulletSpeedMult;
           bullets.push(new Bullet(this._scene,
             this.x, this.y + this.height / 2,
-            Math.sin(a) * 3.5, Math.cos(a) * 3.5, false));
+            Math.sin(a) * spd, Math.cos(a) * spd, false));
         }
         this.shootTimer = 95;
       }

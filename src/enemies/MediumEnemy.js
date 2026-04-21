@@ -6,11 +6,11 @@ const CANVAS_H = 640;
 
 export class MediumEnemy extends Character {
   constructor(scene, x, y, hpMult = 1) {
-    super(x, y, 44, 38, 5, hpMult);
+    super(x, y, 44, 38, 40, hpMult);
     this.score  = 400;
     this.t      = 0;
     this.baseX  = x;
-    this.vy     = 0.8;
+    this.vy     = 0.2;
     this.shootTimer = 60;
     this.phase  = 0;
     this._scene    = scene;
@@ -58,15 +58,15 @@ export class MediumEnemy extends Character {
     this.mesh.add(this._hpFgMesh);
   }
 
-  update(bullets, dt) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
     this.t += dt;
 
     if (this.y < 120) {
       this.y += this.vy * dt;
     } else {
       this.phase = 1;
-      this.x = this.baseX + Math.sin(this.t * 0.03) * 80;
-      this.y += Math.sin(this.t * 0.05) * 0.5 * dt;
+      this.x = this.baseX + Math.sin(this.t * 0.03) * 20;
+      this.y += Math.sin(this.t * 0.05) * 0.125 * dt;
     }
 
     if (this.y > CANVAS_H + 60) this.dead = true;
@@ -76,7 +76,7 @@ export class MediumEnemy extends Character {
       if (this.shootTimer <= 0) {
         for (let a = -0.3; a <= 0.31; a += 0.3) {
           bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2,
-            Math.sin(a) * 4, Math.cos(a) * 4, false));
+            Math.sin(a) * 4 * bulletSpeedMult, Math.cos(a) * 4 * bulletSpeedMult, false));
         }
         this.shootTimer = 70;
       }

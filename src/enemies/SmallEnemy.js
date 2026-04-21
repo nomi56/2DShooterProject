@@ -7,11 +7,11 @@ const CANVAS_H = 640;
 
 export class SmallEnemy extends Character {
   constructor(scene, x, y, hpMult = 1) {
-    super(x, y, 28, 24, 1, hpMult);
+    super(x, y, 28, 24, 8, hpMult);
     this.score = 100;
-    this.speed = 1.5 + Math.random();
+    this.speed = (1.5 + Math.random()) * 0.25;
     this.vy    = this.speed;
-    this.vx    = (Math.random() - 0.5) * 1.5;
+    this.vx    = (Math.random() - 0.5) * 0.375;
     this.shootTimer = Math.floor(Math.random() * 80) + 60;
     this._scene    = scene;
     this._disposed = false;
@@ -44,7 +44,7 @@ export class SmallEnemy extends Character {
     ));
   }
 
-  update(bullets, dt) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
@@ -53,7 +53,7 @@ export class SmallEnemy extends Character {
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
-      bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2, 0, 5, false));
+      bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2, 0, 5 * bulletSpeedMult, false));
       this.shootTimer = 90;
     }
   }

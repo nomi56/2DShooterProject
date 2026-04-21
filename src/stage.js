@@ -208,6 +208,12 @@ export class Stage {
     return this.enemies.find(e => e._isBoss) || null;
   }
 
+  _bulletSpeedMult() {
+    const progress = Math.min(1, this.frame / BOSS_FRAME);
+    if (progress < 0.5) return 0.25;
+    return 0.25 + (progress - 0.5) * 2 * 0.75;
+  }
+
   _difficultyMult() {
     const q = Math.min(3, Math.floor((this.frame / BOSS_FRAME) * 4));
     return Math.pow(2, q);
@@ -237,9 +243,10 @@ export class Stage {
       this._spawnWave(this.waves[this.waveIdx++]);
     }
 
+    const bsMult = this._bulletSpeedMult();
     const dead = [];
     for (const e of this.enemies) {
-      e.update(bullets, dt, playerX, playerY);
+      e.update(bullets, dt, playerX, playerY, bsMult);
       if (e.dead) dead.push(e);
     }
     for (const e of dead) {

@@ -6,10 +6,10 @@ const CANVAS_H = 640;
 
 export class SniperEnemy extends Character {
   constructor(scene, x, y, hpMult = 1) {
-    super(x, y, 30, 28, 3, hpMult);
+    super(x, y, 30, 28, 24, hpMult);
     this.score   = 200;
     this.targetY = 60 + Math.random() * 90;
-    this.vy      = 1.2;
+    this.vy      = 0.3;
     this.baseX   = x;
     this.t       = 0;
     this.shootTimer = 60 + Math.random() * 40;
@@ -43,7 +43,7 @@ export class SniperEnemy extends Character {
     ));
   }
 
-  update(bullets, dt, playerX = 240, playerY = 400) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
     this.t += dt;
 
     if (this.phase === 0) {
@@ -65,7 +65,7 @@ export class SniperEnemy extends Character {
         const dx   = playerX - this.x;
         const dy   = playerY - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const spd  = 5;
+        const spd  = 5 * bulletSpeedMult;
         bullets.push(new Bullet(this._scene, this.x, this.y,
           (dx / dist) * spd, (dy / dist) * spd, false));
         this.shootTimer = 90;
