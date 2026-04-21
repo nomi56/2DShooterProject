@@ -114,9 +114,9 @@ function buildWaves() {
   const waves = [];
   // 前半(0-700)を×5で引き延ばし、後半(700-2600)を3500-5200に圧縮
   // → 小型敵オンリー期間を長くし、中型以降の初登場を後半に集約
-  const remap = f => f < 700
-    ? Math.round(f * 5)
-    : Math.round((f - 700) * (1700 / 1900) + 3500);
+  const remap = f => Math.round((f < 700
+    ? f * 5
+    : (f - 700) * (1700 / 1900) + 3500) * 1.5);
   const add = (frame, type, x, y) => waves.push({ frame: remap(frame), type, x, y });
 
   for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
@@ -160,7 +160,7 @@ function buildWaves() {
   return waves.sort((a, b) => a.frame - b.frame);
 }
 
-const BOSS_FRAME  = 5200;
+const BOSS_FRAME  = 7800;
 const DENSITY_CAP = { small: 8, medium: 3, sniper: 2, tank: 2 };
 
 // ─── Stage manager ────────────────────────────────────────────────────────────
