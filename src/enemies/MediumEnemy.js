@@ -58,7 +58,7 @@ export class MediumEnemy extends Character {
     this.mesh.add(this._hpFgMesh);
   }
 
-  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1, fireRateMult = 1) {
     this.t += dt;
 
     if (this.y < 120) {
@@ -78,7 +78,7 @@ export class MediumEnemy extends Character {
           bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2,
             Math.sin(a) * 4 * bulletSpeedMult, Math.cos(a) * 4 * bulletSpeedMult, false));
         }
-        this.shootTimer = 70;
+        this.shootTimer = 70 * fireRateMult;
       }
     }
   }

@@ -112,7 +112,8 @@ export class PowerUp {
 // ─── Wave definitions ─────────────────────────────────────────────────────────
 function buildWaves() {
   const waves = [];
-  const add = (frame, type, x, y) => waves.push({ frame, type, x, y });
+  // frame × 2 でステージ全長を2倍に
+  const add = (frame, type, x, y) => waves.push({ frame: frame * 2, type, x, y });
 
   for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
   for (let i = 0; i < 6; i++) add(300 + i * 25, 'small',  80 + i * 60, -30);
@@ -155,7 +156,7 @@ function buildWaves() {
   return waves.sort((a, b) => a.frame - b.frame);
 }
 
-const BOSS_FRAME  = 2600;
+const BOSS_FRAME  = 5200;
 const DENSITY_CAP = { small: 8, medium: 3, sniper: 2, tank: 2 };
 
 // ─── Stage manager ────────────────────────────────────────────────────────────
@@ -214,6 +215,11 @@ export class Stage {
     return 0.25 + (progress - 0.5) * 2 * 0.75;
   }
 
+  _fireRateMult() {
+    const progress = Math.min(1, this.frame / BOSS_FRAME);
+    return 4.0 - progress * 3.0; // 序盤4倍(1/4頻度)→終盤1倍(通常)
+  }
+
   _difficultyMult() {
     const q = Math.min(3, Math.floor((this.frame / BOSS_FRAME) * 4));
     return Math.pow(2, q);
@@ -244,9 +250,10 @@ export class Stage {
     }
 
     const bsMult = this._bulletSpeedMult();
+    const frMult = this._fireRateMult();
     const dead = [];
     for (const e of this.enemies) {
-      e.update(bullets, dt, playerX, playerY, bsMult);
+      e.update(bullets, dt, playerX, playerY, bsMult, frMult);
       if (e.dead) dead.push(e);
     }
     for (const e of dead) {

@@ -44,7 +44,7 @@ export class SmallEnemy extends Character {
     ));
   }
 
-  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1, fireRateMult = 1) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
@@ -54,7 +54,7 @@ export class SmallEnemy extends Character {
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
       bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2, 0, 5 * bulletSpeedMult, false));
-      this.shootTimer = 90;
+      this.shootTimer = 90 * fireRateMult;
     }
   }
 

@@ -43,7 +43,7 @@ export class SniperEnemy extends Character {
     ));
   }
 
-  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1, fireRateMult = 1) {
     this.t += dt;
 
     if (this.phase === 0) {
@@ -68,7 +68,7 @@ export class SniperEnemy extends Character {
         const spd  = 5 * bulletSpeedMult;
         bullets.push(new Bullet(this._scene, this.x, this.y,
           (dx / dist) * spd, (dy / dist) * spd, false));
-        this.shootTimer = 90;
+        this.shootTimer = 90 * fireRateMult;
       }
     }
   }

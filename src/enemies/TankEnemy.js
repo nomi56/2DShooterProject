@@ -59,7 +59,7 @@ export class TankEnemy extends Character {
     this.mesh.add(this._hpFgMesh);
   }
 
-  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1) {
+  update(bullets, dt, playerX = 240, playerY = 400, bulletSpeedMult = 1, fireRateMult = 1) {
     this.t += dt;
 
     if (this.y < 140) {
@@ -81,7 +81,7 @@ export class TankEnemy extends Character {
             this.x, this.y + this.height / 2,
             Math.sin(a) * spd, Math.cos(a) * spd, false));
         }
-        this.shootTimer = 95;
+        this.shootTimer = 95 * fireRateMult;
       }
     }
   }
