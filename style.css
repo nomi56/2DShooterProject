@@ -16,17 +16,22 @@ body {
 
 #game-container {
   position: relative;
+  /* 480×640 の比率を保ちつつ画面に収める */
+  width: min(480px, 100vw, 75vh);
+  aspect-ratio: 480 / 640;
 }
 
-#gameCanvas {
-  display: block;
-  image-rendering: pixelated;
-  border: 1px solid #222;
-}
-
+#gameCanvas,
 #hudCanvas {
+  display: block;
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+#hudCanvas {
   pointer-events: none;
 }
