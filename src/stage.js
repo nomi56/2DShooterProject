@@ -293,6 +293,25 @@ export class Stage {
     }
   }
 
+  clearEnemies() {
+    for (const e of this.enemies) e.dispose();
+    this.enemies = [];
+  }
+
+  spawnEnemy(type) {
+    this.clearEnemies();
+    const cx = CANVAS_W / 2;
+    let e;
+    switch (type) {
+      case 'small':  e = new SmallEnemy (this._scene, cx,  80, 1); break;
+      case 'medium': e = new MediumEnemy(this._scene, cx,  80, 1); break;
+      case 'sniper': e = new SniperEnemy(this._scene, cx,  80, 1); break;
+      case 'tank':   e = new TankEnemy  (this._scene, cx, -60, 1); break;
+      case 'boss':   e = new Boss(this._scene);                    break;
+    }
+    if (e) this.enemies.push(e);
+  }
+
   updateMeshes() {
     for (const e  of this.enemies)  e.updateMesh();
     for (const pu of this.powerUps) pu.updateMesh();

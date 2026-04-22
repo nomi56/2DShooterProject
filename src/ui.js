@@ -3,6 +3,73 @@ import { BUILD } from './version.js';
 const CANVAS_W = 480;
 const CANVAS_H = 640;
 
+// ─── 共通ボタン矩形（main.js でヒット判定に使用） ─────────────────────────────
+export const BACK_BTN = { x: 386, y: 6, w: 86, h: 36 };
+
+export const DEBUG_ENEMY_BTNS = [
+  { type: 'small',  label: 'Small',  x:   5, y: 50, w: 90, h: 36 },
+  { type: 'medium', label: 'Medium', x: 100, y: 50, w: 90, h: 36 },
+  { type: 'sniper', label: 'Sniper', x: 195, y: 50, w: 90, h: 36 },
+  { type: 'tank',   label: 'Tank',   x: 290, y: 50, w: 90, h: 36 },
+  { type: 'boss',   label: 'Boss',   x: 385, y: 50, w: 90, h: 36 },
+];
+
+export const DEBUG_TITLE_BTN = { x: 165, y: 430, w: 150, h: 44 };
+
+// ─── 常時表示：タイトルへ戻るボタン ──────────────────────────────────────────
+export function drawBackButton(ctx) {
+  const b = BACK_BTN;
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(b.x, b.y, b.w, b.h);
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(b.x, b.y, b.w, b.h);
+  ctx.fillStyle = '#bbb';
+  ctx.font = '13px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('< TITLE', b.x + b.w / 2, b.y + b.h / 2);
+}
+
+// ─── デバッグ画面 ─────────────────────────────────────────────────────────────
+export function drawDebugScreen(ctx, enemies, selectedType) {
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, 0, CANVAS_W, 95);
+
+  ctx.fillStyle = '#ff0';
+  ctx.font = 'bold 13px monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('DEBUG', 8, 24);
+
+  for (const btn of DEBUG_ENEMY_BTNS) {
+    const sel = btn.type === selectedType;
+    ctx.fillStyle = sel ? 'rgba(255,200,0,0.25)' : 'rgba(0,0,100,0.7)';
+    ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
+    ctx.strokeStyle = sel ? '#ff0' : '#446';
+    ctx.lineWidth = sel ? 2 : 1;
+    ctx.strokeRect(btn.x, btn.y, btn.w, btn.h);
+    ctx.fillStyle = sel ? '#ff0' : '#aaf';
+    ctx.font = '13px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2);
+  }
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  if (enemies.length > 0) {
+    const e = enemies[0];
+    ctx.fillStyle = '#0ff';
+    ctx.font = '12px monospace';
+    ctx.fillText(`HP: ${Math.ceil(e.hp)} / ${e.maxHp}`, 8, 92);
+  } else {
+    ctx.fillStyle = '#888';
+    ctx.font = '12px monospace';
+    ctx.fillText('← 敵の種類を選んでください', 8, 92);
+  }
+}
+
 export function drawHUD(ctx, player, boss = null) {
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 14px monospace';
@@ -79,6 +146,17 @@ export function drawTitle(ctx) {
   ctx.fillStyle = '#ff0';
   ctx.font = 'bold 18px monospace';
   ctx.fillText('SPACE / Click / Tap to Start', CANVAS_W / 2, 380);
+
+  // DEBUG ボタン
+  const db = DEBUG_TITLE_BTN;
+  ctx.fillStyle = 'rgba(0,0,60,0.8)';
+  ctx.fillRect(db.x, db.y, db.w, db.h);
+  ctx.strokeStyle = '#446';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(db.x, db.y, db.w, db.h);
+  ctx.fillStyle = '#668';
+  ctx.font = '14px monospace';
+  ctx.fillText('DEBUG MODE', CANVAS_W / 2, db.y + db.h / 2);
 
   ctx.fillStyle = '#555';
   ctx.font = '11px monospace';
