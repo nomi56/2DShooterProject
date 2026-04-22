@@ -71,16 +71,17 @@ export class TankEnemy extends Character {
 
     if (this.y > CANVAS_H + 60) this.dead = true;
 
-    if (this.phase === 1) {
+    // 半分見えた時点（y>=0）で射撃開始
+    if (this.y >= 0) {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
-        for (let i = -2; i <= 2; i++) {
-          const a = (i / 4) * 0.7;
-          const spd = 3.5 * bulletSpeedMult;
-          bullets.push(new Bullet(this._scene,
-            this.x, this.y + this.height / 2,
-            Math.sin(a) * spd, Math.cos(a) * spd, false));
-        }
+        const dx   = playerX - this.x;
+        const dy   = playerY - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const spd  = 2.5 * bulletSpeedMult;
+        bullets.push(new Bullet(this._scene,
+          this.x, this.y + this.height / 2,
+          (dx / dist) * spd, (dy / dist) * spd, false, 1, 5));
         this.shootTimer = 95 * fireRateMult;
       }
     }

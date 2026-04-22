@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
 export class Bullet {
-  constructor(scene, x, y, vx, vy, isPlayer, power = 1) {
+  constructor(scene, x, y, vx, vy, isPlayer, power = 1, sizeMult = 1) {
     this.x = x; this.y = y; this.vx = vx; this.vy = vy;
     this.isPlayer = isPlayer; this.power = power; this.dead = false;
-    this.width  = isPlayer ? 4  : 6;
-    this.height = isPlayer ? 14 : 8;
+    this.width  = (isPlayer ? 4  : 6) * sizeMult;
+    this.height = (isPlayer ? 14 : 8) * sizeMult;
     this._scene    = scene;
     this._inScene  = false;
     this._disposed = false;
