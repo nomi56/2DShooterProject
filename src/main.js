@@ -25,7 +25,7 @@ if (window.visualViewport) window.visualViewport.addEventListener('resize', resi
 
 // ─── Three.js setup ──────────────────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setSize(W, H);
+renderer.setSize(W, H, false); // false = don't overwrite canvas CSS size
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
