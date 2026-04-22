@@ -10,6 +10,16 @@ const hudCtx    = hudCanvas.getContext('2d');
 
 const W = 480, H = 640;
 
+// ─── Responsive sizing ────────────────────────────────────────────────────────
+const container = document.getElementById('game-container');
+function resizeGame() {
+  const scale = Math.min(window.innerWidth / W, window.innerHeight / H, 1);
+  container.style.width  = `${W * scale}px`;
+  container.style.height = `${H * scale}px`;
+}
+resizeGame();
+window.addEventListener('resize', resizeGame);
+
 // ─── Three.js setup ──────────────────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setSize(W, H);
