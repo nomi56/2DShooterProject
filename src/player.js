@@ -165,7 +165,7 @@ export class Player extends Character {
     const by         = this.y - this.height / 2;
     const spd        = this.bulletSpeedMult;
     const count      = this.powerLevel;
-    const halfSpread = (count - 1) * 0.07; // Lv1=0rad, Lv10=0.63rad(36°)
+    const halfSpread = (count - 1) * 0.035; // Lv1=0rad, Lv10=0.315rad(18°)
 
     for (let i = 0; i < count; i++) {
       const t     = count === 1 ? 0 : (i / (count - 1)) * 2 - 1; // -1..1
