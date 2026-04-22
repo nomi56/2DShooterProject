@@ -161,19 +161,18 @@ export class Player extends Character {
   }
 
   _fire(bullets) {
-    const bx  = this.x;
-    const by  = this.y - this.height / 2;
-    const spd = this.bulletSpeedMult;
-    bullets.push(new Bullet(this._scene, bx, by, 0, -12 * spd, true, spd));
-    const maxHalfSpread = this.width * 0.75;
-    const pairs = this.powerLevel - 1;
-    for (let i = 1; i <= pairs; i++) {
-      const angle = i * 0.03;
-      const vy    = -12 * spd * Math.cos(angle);
+    const bx         = this.x;
+    const by         = this.y - this.height / 2;
+    const spd        = this.bulletSpeedMult;
+    const count      = this.powerLevel;
+    const halfSpread = (count - 1) * 0.07; // Lv1=0rad, Lv10=0.63rad(36°)
+
+    for (let i = 0; i < count; i++) {
+      const t     = count === 1 ? 0 : (i / (count - 1)) * 2 - 1; // -1..1
+      const angle = t * halfSpread;
       const vx    =  12 * spd * Math.sin(angle);
-      const xOff  = pairs > 0 ? (i / pairs) * maxHalfSpread : 0;
-      bullets.push(new Bullet(this._scene, bx - xOff, by, -vx, vy, true, spd));
-      bullets.push(new Bullet(this._scene, bx + xOff, by,  vx, vy, true, spd));
+      const vy    = -12 * spd * Math.cos(angle);
+      bullets.push(new Bullet(this._scene, bx, by, vx, vy, true, spd));
     }
   }
 
