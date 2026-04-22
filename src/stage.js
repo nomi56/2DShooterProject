@@ -261,6 +261,8 @@ export class Stage {
     this.frame += dt;
 
     while (this.waveIdx < this.waves.length && this.waves[this.waveIdx].frame <= this.frame) {
+      const w = this.waves[this.waveIdx];
+      if (w.type === 'boss' && this.enemies.length > 0) break;
       this._spawnWave(this.waves[this.waveIdx++]);
     }
 
