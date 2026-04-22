@@ -17,7 +17,7 @@ body {
 #game-container {
   position: relative;
   /* 480×640 の比率を保ちつつ画面に収める */
-  width: min(480px, 100vw, 75vh);
+  width: min(480px, 100%, 75vh);
   aspect-ratio: 480 / 640;
 }
 
