@@ -112,62 +112,50 @@ export class PowerUp {
 // ─── Wave definitions ─────────────────────────────────────────────────────────
 function buildWaves() {
   const waves = [];
-  // 前半(0-700)を×5で引き延ばし、後半(700-2600)を3500-5200に圧縮
-  // → 小型敵オンリー期間を長くし、中型以降の初登場を後半に集約
   const remap = f => Math.round((f < 700
     ? f * 5
     : (f - 700) * (1700 / 1900) + 3500) * 1.5);
   const add = (frame, type, x, y, waitClear = false) => waves.push({ frame: remap(frame), type, x, y, waitClear });
 
+  // ── Phase 1: Small only (orig 60–633) ────────────────────────────────────
   for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
-  // クラスター1-2間の空白を埋める
   for (let i = 0; i < 4; i++) add(232 + i * 18, 'small',  80 + i * 90, -30);
   for (let i = 0; i < 6; i++) add(300 + i * 25, 'small',  80 + i * 60, -30);
-  // クラスター2-3間の空白を埋める
   for (let i = 0; i < 4; i++) add(436 + i * 18, 'small',  90 + i * 85, -30);
   for (let i = 0; i < 5; i++) add(520 + i * 20, 'small', 100 + i * 70, -30);
-  // クラスター3-中型初登場間の空白を埋める
   for (let i = 0; i < 2; i++) add(615 + i * 18, 'small', 120 + i * 240, -30);
 
-  // mediumゾーン: 650を基点にギャップを2倍に拡張
-  add(650, 'medium', 160, -50);
-  add(770, 'medium', 320, -50);             // 650+(60×2)
-  for (let i = 0; i < 8; i++) add(950 + i * 40, 'small', 40 + i * 55, -30); // 650+(150×2), step 40
-  add(1270, 'medium', 240, -50);            // 650+(310×2)
+  // ── Phase 2: Medium area (orig 650–1270, ×2 intervals) ───────────────────
+  add(650,  'medium', 160, -50);
+  add(770,  'medium', 320, -50);
+  for (let i = 0; i < 8; i++) add( 950 + i * 40, 'small', 40 + i * 55, -30);
+  add(1270, 'medium', 240, -50);
 
-  add(1050, 'sniper', 120, -40);
-  add(1110, 'sniper', 360, -40);
-  for (let i = 0; i < 6; i++) add(1200 + i * 25, 'small', 60 + i * 72, -30);
-  add(1350, 'sniper', 200, -40);
-  add(1350, 'medium', 350, -50);
-  add(1420, 'sniper', 300, -40);
-  add(1480, 'medium', 130, -50);
+  // ── Phase 3: Sniper area (orig 1280–2140, ×2 intervals, waitClear) ───────
+  add(1280, 'sniper', 120, -40, true);  // wait for medium to clear
+  add(1400, 'sniper', 360, -40);                                    // +120 (was +60)
+  for (let i = 0; i < 6; i++) add(1580 + i * 50, 'small', 60 + i * 72, -30); // +300 step 50 (was +150 step 25)
+  add(1880, 'sniper', 200, -40);                                    // +600 (was +300)
+  add(1880, 'medium', 350, -50);
+  add(2020, 'sniper', 300, -40);                                    // +740 (was +370)
+  add(2140, 'medium', 130, -50);                                    // +860 (was +430)
 
-  add(1550, 'tank',   240, -60);
-  for (let i = 0; i < 6; i++) add(1620 + i * 28, 'small',  50 + i * 76, -30);
-  add(1750, 'sniper', 130, -40);
-  add(1750, 'sniper', 350, -40);
-  add(1870, 'tank',   150, -60);
-  add(1870, 'tank',   330, -60);
-  add(1950, 'medium', 240, -50);
+  // ── Phase 4: Tank area (orig 2150–2950, ×2 intervals, waitClear) ─────────
+  add(2150, 'tank',   240, -60, true);  // wait for sniper area to clear
+  for (let i = 0; i < 6; i++) add(2290 + i * 56, 'small',  50 + i * 76, -30); // +140 step 56 (was +70 step 28)
+  add(2550, 'sniper', 130, -40);                                    // +400 (was +200)
+  add(2550, 'sniper', 350, -40);
+  add(2790, 'tank',   150, -60);                                    // +640 (was +320)
+  add(2790, 'tank',   330, -60);
+  add(2950, 'medium', 240, -50);                                    // +800 (was +400)
 
-  for (let i = 0; i < 8; i++) add(2000 + i * 22, 'small',  40 + i * 55, -30);
-  add(2120, 'medium', 120, -50);
-  add(2120, 'medium', 360, -50);
-  add(2160, 'sniper', 240, -40);
-  add(2220, 'tank',   200, -60);
-  add(2280, 'sniper',  80, -40);
-  add(2280, 'sniper', 400, -40);
-  for (let i = 0; i < 6; i++) add(2340 + i * 25, 'small',  70 + i * 68, -30);
-  add(2420, 'medium', 170, -50);
-  add(2420, 'medium', 310, -50);
-
-  add(2600, 'boss', 240, -90, true);
+  // ── Boss ──────────────────────────────────────────────────────────────────
+  add(3000, 'boss', 240, -90, true);
 
   return waves.sort((a, b) => a.frame - b.frame);
 }
 
-const BOSS_FRAME  = 7800;
+const BOSS_FRAME  = 9000;
 const DENSITY_CAP = { small: 8, medium: 3, sniper: 2, tank: 2 };
 
 // ─── Stage manager ────────────────────────────────────────────────────────────
