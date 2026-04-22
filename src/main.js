@@ -13,12 +13,15 @@ const W = 480, H = 640;
 // ─── Responsive sizing ────────────────────────────────────────────────────────
 const container = document.getElementById('game-container');
 function resizeGame() {
-  const scale = Math.min(window.innerWidth / W, window.innerHeight / H, 1);
+  const vw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const scale = Math.min(vw / W, vh / H, 1);
   container.style.width  = `${W * scale}px`;
   container.style.height = `${H * scale}px`;
 }
 resizeGame();
 window.addEventListener('resize', resizeGame);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', resizeGame);
 
 // ─── Three.js setup ──────────────────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
