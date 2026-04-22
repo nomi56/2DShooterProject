@@ -120,8 +120,14 @@ function buildWaves() {
   const add = (frame, type, x, y) => waves.push({ frame: remap(frame), type, x, y });
 
   for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
+  // クラスター1-2間の空白を埋める
+  for (let i = 0; i < 4; i++) add(232 + i * 18, 'small',  80 + i * 90, -30);
   for (let i = 0; i < 6; i++) add(300 + i * 25, 'small',  80 + i * 60, -30);
+  // クラスター2-3間の空白を埋める
+  for (let i = 0; i < 4; i++) add(436 + i * 18, 'small',  90 + i * 85, -30);
   for (let i = 0; i < 5; i++) add(520 + i * 20, 'small', 100 + i * 70, -30);
+  // クラスター3-中型初登場間の空白を埋める
+  for (let i = 0; i < 2; i++) add(615 + i * 18, 'small', 120 + i * 240, -30);
 
   add(650, 'medium', 160, -50);
   add(710, 'medium', 320, -50);
