@@ -117,7 +117,7 @@ function buildWaves() {
   const remap = f => Math.round((f < 700
     ? f * 5
     : (f - 700) * (1700 / 1900) + 3500) * 1.5);
-  const add = (frame, type, x, y) => waves.push({ frame: remap(frame), type, x, y });
+  const add = (frame, type, x, y, waitClear = false) => waves.push({ frame: remap(frame), type, x, y, waitClear });
 
   for (let i = 0; i < 6; i++) add( 60 + i * 30, 'small',  60 + i * 70, -30);
   // クラスター1-2間の空白を埋める
@@ -161,7 +161,7 @@ function buildWaves() {
   add(2420, 'medium', 170, -50);
   add(2420, 'medium', 310, -50);
 
-  add(2600, 'boss', 240, -90);
+  add(2600, 'boss', 240, -90, true);
 
   return waves.sort((a, b) => a.frame - b.frame);
 }
@@ -262,7 +262,7 @@ export class Stage {
 
     while (this.waveIdx < this.waves.length && this.waves[this.waveIdx].frame <= this.frame) {
       const w = this.waves[this.waveIdx];
-      if (w.type === 'boss' && this.enemies.length > 0) break;
+      if (w.waitClear && this.enemies.length > 0) break;
       this._spawnWave(this.waves[this.waveIdx++]);
     }
 
