@@ -10,7 +10,7 @@ export class MediumEnemy extends Character {
     this.score  = 400;
     this.t      = 0;
     this.baseX  = x;
-    this.vy     = 0.2;
+    this.vy     = 1.0;
     this.shootTimer = 60;
     this.phase  = 0;
     this._scene    = scene;
@@ -34,14 +34,14 @@ export class MediumEnemy extends Character {
     hexShape.closePath();
     this._bodyMesh = new THREE.Mesh(
       new THREE.ShapeGeometry(hexShape),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x8844cc }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x0099ff }),
     );
     this.mesh.add(this._bodyMesh);
 
     // Core circle
     this.mesh.add(new THREE.Mesh(
       new THREE.CircleGeometry(10, 16),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xdd88ff }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x66ddff }),
     ));
 
     // HP bar
@@ -71,7 +71,7 @@ export class MediumEnemy extends Character {
 
     if (this.y > CANVAS_H + 60) this.dead = true;
 
-    if (this.phase === 1) {
+    if (this.y >= this.height / 2) {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
         for (let a = -0.3; a <= 0.31; a += 0.3) {

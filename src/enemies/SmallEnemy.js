@@ -33,14 +33,14 @@ export class SmallEnemy extends Character {
     bodyShape.closePath();
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(bodyShape),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xff8844 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffaa00 }),
     ));
 
     const coreShape = new THREE.Shape();
     coreShape.absellipse(0, 0, 5, 8, 0, Math.PI * 2, false, 0);
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(coreShape),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffccaa }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xffeeaa }),
     ));
   }
 
@@ -51,10 +51,12 @@ export class SmallEnemy extends Character {
     if (this.x < 20 || this.x > CANVAS_W - 20) this.vx *= -1;
     if (this.y > CANVAS_H + 40) this.dead = true;
 
-    this.shootTimer -= dt;
-    if (this.shootTimer <= 0) {
-      bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2, 0, 5 * bulletSpeedMult, false));
-      this.shootTimer = 90 * fireRateMult;
+    if (this.y >= this.height / 2) {
+      this.shootTimer -= dt;
+      if (this.shootTimer <= 0) {
+        bullets.push(new Bullet(this._scene, this.x, this.y + this.height / 2, 0, 5 * bulletSpeedMult, false));
+        this.shootTimer = 90 * fireRateMult;
+      }
     }
   }
 

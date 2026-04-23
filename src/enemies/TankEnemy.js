@@ -6,9 +6,9 @@ const CANVAS_H = 640;
 
 export class TankEnemy extends Character {
   constructor(scene, x, y, hpMult = 1) {
-    super(x, y, 52, 46, 104, hpMult);
+    super(x, y, 52, 46, 208, hpMult);
     this.score  = 600;
-    this.vy     = 0.125;
+    this.vy     = 0.75;
     this.baseX  = x;
     this.t      = 0;
     this.shootTimer = 80;
@@ -26,13 +26,13 @@ export class TankEnemy extends Character {
     // Outer hull
     this.mesh.add(new THREE.Mesh(
       new THREE.PlaneGeometry(this.width, this.height),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x226644 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400aa }),
     ));
 
     // Armor plate
     const plateMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(this.width - 10, this.height - 10),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x339966 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7722dd }),
     );
     plateMesh.position.z = 0.1;
     this.mesh.add(plateMesh);
@@ -40,7 +40,7 @@ export class TankEnemy extends Character {
     // Cannon barrel
     const barrelMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(10, 18),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x11aa33 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xaa66ff }),
     );
     barrelMesh.position.set(0, this.height / 2 - 1, 0.2);
     this.mesh.add(barrelMesh);
@@ -72,8 +72,7 @@ export class TankEnemy extends Character {
 
     if (this.y > CANVAS_H + 60) this.dead = true;
 
-    // 半分見えた時点（y>=0）で射撃開始
-    if (this.y >= 0) {
+    if (this.y >= this.height / 2) {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
         const dx   = playerX - this.x;

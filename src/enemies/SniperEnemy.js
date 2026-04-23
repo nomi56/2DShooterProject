@@ -9,7 +9,7 @@ export class SniperEnemy extends Character {
     super(x, y, 30, 28, 24, hpMult);
     this.score   = 200;
     this.targetY = 60 + Math.random() * 90;
-    this.vy      = 0.3;
+    this.vy      = 1.5;
     this.baseX   = x;
     this.t       = 0;
     this.shootTimer = 60 + Math.random() * 40;
@@ -33,13 +33,13 @@ export class SniperEnemy extends Character {
     diamondShape.closePath();
     this.mesh.add(new THREE.Mesh(
       new THREE.ShapeGeometry(diamondShape),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xbb0066 }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xff1133 }),
     ));
 
     // Inner highlight
     this.mesh.add(new THREE.Mesh(
       new THREE.CircleGeometry(5, 12),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xff44cc }),
+      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xff8866 }),
     ));
   }
 
@@ -59,13 +59,13 @@ export class SniperEnemy extends Character {
 
     if (this.y > CANVAS_H + 40) this.dead = true;
 
-    if (this.phase === 1) {
+    if (this.y >= this.height / 2) {
       this.shootTimer -= dt;
       if (this.shootTimer <= 0) {
         const dx   = playerX - this.x;
         const dy   = playerY - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const spd  = 5 * bulletSpeedMult;
+        const spd  = 10 * bulletSpeedMult;
         bullets.push(new Bullet(this._scene, this.x, this.y,
           (dx / dist) * spd, (dy / dist) * spd, false));
         this.shootTimer = 90 * fireRateMult;
