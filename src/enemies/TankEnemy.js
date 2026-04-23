@@ -67,6 +67,7 @@ export class TankEnemy extends Character {
     } else {
       this.phase = 1;
       this.x = this.baseX + Math.sin(this.t * 0.015) * 60;
+      this.y += this.vy * dt;
     }
 
     if (this.y > CANVAS_H + 60) this.dead = true;

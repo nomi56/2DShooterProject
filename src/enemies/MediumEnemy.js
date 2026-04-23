@@ -66,7 +66,7 @@ export class MediumEnemy extends Character {
     } else {
       this.phase = 1;
       this.x = this.baseX + Math.sin(this.t * 0.03) * 20;
-      this.y += Math.sin(this.t * 0.05) * 0.125 * dt;
+      this.y += (this.vy + Math.sin(this.t * 0.05) * 0.125) * dt;
     }
 
     if (this.y > CANVAS_H + 60) this.dead = true;

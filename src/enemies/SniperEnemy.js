@@ -54,7 +54,7 @@ export class SniperEnemy extends Character {
       }
     } else {
       this.x  = this.baseX + Math.sin(this.t * 0.02) * 30;
-      this.y += 0.12 * dt;
+      this.y += this.vy * dt;
     }
 
     if (this.y > CANVAS_H + 40) this.dead = true;

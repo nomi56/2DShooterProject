@@ -267,11 +267,13 @@ export class Stage {
       if (e.dead) dead.push(e);
     }
     for (const e of dead) {
-      spawnExplosion(this._scene, particles, e.x, e.y, e._isBoss ? 60 : 20, e._isBoss ? '#f60' : '#fa0');
-      this._killCount++;
-      if (e._isBoss || this._killCount % 4 === 0) {
-        const types = ['power', 'rate', 'speed'];
-        this.powerUps.push(new PowerUp(this._scene, e.x, e.y, types[Math.floor(Math.random() * 3)]));
+      if (e.y <= CANVAS_H) {
+        spawnExplosion(this._scene, particles, e.x, e.y, e._isBoss ? 60 : 20, e._isBoss ? '#f60' : '#fa0');
+        this._killCount++;
+        if (e._isBoss || this._killCount % 4 === 0) {
+          const types = ['power', 'rate', 'speed'];
+          this.powerUps.push(new PowerUp(this._scene, e.x, e.y, types[Math.floor(Math.random() * 3)]));
+        }
       }
       e.dispose();
     }
