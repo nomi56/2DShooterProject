@@ -131,26 +131,30 @@ function buildWaves() {
   for (let i = 0; i < 8; i++) add( 950 + i * 40, 'small', 40 + i * 55, -30);
   add(1270, 'medium', 240, -50);
 
-  // ── Phase 3: Sniper area (orig 1280–2140, ×2 intervals, waitClear) ───────
-  add(1280, 'sniper', 120, -40, true);  // wait for medium to clear
-  add(1400, 'sniper', 360, -40);                                    // +120 (was +60)
-  for (let i = 0; i < 6; i++) add(1580 + i * 50, 'small', 60 + i * 72, -30); // +300 step 50 (was +150 step 25)
-  add(1880, 'sniper', 200, -40);                                    // +600 (was +300)
-  add(1880, 'medium', 350, -50);
-  add(2020, 'sniper', 300, -40);                                    // +740 (was +370)
-  add(2140, 'medium', 130, -50);                                    // +860 (was +430)
+  // ~10 s gap after medium ──────────────────────────────────────────────────
 
-  // ── Phase 4: Tank area (orig 2150–2950, ×2 intervals, waitClear) ─────────
-  add(2150, 'tank',   240, -60, true);  // wait for sniper area to clear
-  for (let i = 0; i < 6; i++) add(2290 + i * 56, 'small',  50 + i * 76, -30); // +140 step 56 (was +70 step 28)
-  add(2550, 'sniper', 130, -40);                                    // +400 (was +200)
-  add(2550, 'sniper', 350, -40);
-  add(2790, 'tank',   150, -60);                                    // +640 (was +320)
-  add(2790, 'tank',   330, -60);
-  add(2950, 'medium', 240, -50);                                    // +800 (was +400)
+  // ── Phase 3: Sniper area (orig 1720–2580, ×2 intervals) ──────────────────
+  add(1720, 'sniper', 120, -40);
+  add(1840, 'sniper', 360, -40);                                    // +120 (was +60)
+  for (let i = 0; i < 6; i++) add(2020 + i * 50, 'small', 60 + i * 72, -30); // +300 step 50 (was +150 step 25)
+  add(2320, 'sniper', 200, -40);                                    // +600 (was +300)
+  add(2320, 'medium', 350, -50);
+  add(2460, 'sniper', 300, -40);                                    // +740 (was +370)
+  add(2580, 'medium', 130, -50);                                    // +860 (was +430)
+
+  // ~10 s gap after sniper ───────────────────────────────────────────────────
+
+  // ── Phase 4: Tank area (orig 3030–3830, ×2 intervals) ────────────────────
+  add(3030, 'tank',   240, -60);
+  for (let i = 0; i < 6; i++) add(3170 + i * 56, 'small',  50 + i * 76, -30); // +140 step 56 (was +70 step 28)
+  add(3430, 'sniper', 130, -40);                                    // +400 (was +200)
+  add(3430, 'sniper', 350, -40);
+  add(3670, 'tank',   150, -60);                                    // +640 (was +320)
+  add(3670, 'tank',   330, -60);
+  add(3830, 'medium', 240, -50);                                    // +800 (was +400)
 
   // ── Boss ──────────────────────────────────────────────────────────────────
-  add(3000, 'boss', 240, -90, true);
+  add(4000, 'boss', 240, -90, true);
 
   return waves.sort((a, b) => a.frame - b.frame);
 }

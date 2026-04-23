@@ -77,7 +77,7 @@ export class Boss extends Character {
     const hpRatio  = this.hp / this.maxHp;
     const interval = Math.max(15, 80 * hpRatio);
     const fanCount = hpRatio > 0.5 ? 7 : hpRatio > 0.25 ? 12 : 18;
-    const spd      = hpRatio > 0.5 ? 3.5 : 4.5;
+    const spd      = hpRatio > 0.5 ? 3.5 * (2/3) : 4.5 * (2/3);
 
     this.shootTimer -= dt;
     if (this.shootTimer <= 0) {
