@@ -8,7 +8,7 @@ export class TankEnemy extends Character {
   constructor(scene, x, y, hpMult = 1) {
     super(x, y, 52, 46, 208, hpMult);
     this.score  = 600;
-    this.vy     = 0.75;
+    this.vy     = 0.375;
     this.baseX  = x;
     this.t      = 0;
     this.shootTimer = 80;

@@ -9,7 +9,7 @@ export class SniperEnemy extends Character {
     super(x, y, 30, 28, 24, hpMult);
     this.score   = 200;
     this.targetY = 60 + Math.random() * 90;
-    this.vy      = 1.5;
+    this.vy      = 0.75;
     this.baseX   = x;
     this.t       = 0;
     this.shootTimer = 60 + Math.random() * 40;

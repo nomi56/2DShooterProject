@@ -10,7 +10,7 @@ export class MediumEnemy extends Character {
     this.score  = 400;
     this.t      = 0;
     this.baseX  = x;
-    this.vy     = 1.0;
+    this.vy     = 0.5;
     this.shootTimer = 60;
     this.phase  = 0;
     this._scene    = scene;
