@@ -25,6 +25,7 @@ export class Player extends Character {
     this._touchActive = false;
     this._lastTouchX  = 0;
     this._lastTouchY  = 0;
+    this._inputAbort  = new AbortController();
     this._initMesh();
     scene.add(this.mesh);
     this._bindInput();
@@ -78,14 +79,15 @@ export class Player extends Character {
   }
 
   _bindInput() {
+    const opt = { signal: this._inputAbort.signal };
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
       if (e.code === 'Space') this.shooting = true;
-    });
+    }, opt);
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
       if (e.code === 'Space') this.shooting = false;
-    });
+    }, opt);
 
     const canvas = document.getElementById('gameCanvas');
 
@@ -95,21 +97,21 @@ export class Player extends Character {
         x: (e.clientX - rect.left) * (CANVAS_W / rect.width),
         y: (e.clientY - rect.top)  * (CANVAS_H / rect.height),
       };
-    });
-    canvas.addEventListener('mousedown',  () => { this.shooting = true; });
-    canvas.addEventListener('mouseup',    () => { this.shooting = false; });
-    canvas.addEventListener('mouseleave', () => { this.mouse = null; });
+    }, opt);
+    canvas.addEventListener('mousedown',  () => { this.shooting = true; }, opt);
+    canvas.addEventListener('mouseup',    () => { this.shooting = false; }, opt);
+    canvas.addEventListener('mouseleave', () => { this.mouse = null; }, opt);
 
-    canvas.addEventListener('touchstart', (e) => {
+    window.addEventListener('touchstart', (e) => {
       e.preventDefault();
       const t = e.changedTouches[0];
       const rect = canvas.getBoundingClientRect();
       this._lastTouchX = (t.clientX - rect.left) * (CANVAS_W / rect.width);
       this._lastTouchY = (t.clientY - rect.top)  * (CANVAS_H / rect.height);
       this._touchActive = true;
-    }, { passive: false });
+    }, { passive: false, signal: this._inputAbort.signal });
 
-    canvas.addEventListener('touchmove', (e) => {
+    window.addEventListener('touchmove', (e) => {
       e.preventDefault();
       const t = e.changedTouches[0];
       const rect = canvas.getBoundingClientRect();
@@ -119,11 +121,11 @@ export class Player extends Character {
       this.y += (cy - this._lastTouchY) * 2;
       this._lastTouchX = cx;
       this._lastTouchY = cy;
-    }, { passive: false });
+    }, { passive: false, signal: this._inputAbort.signal });
 
     const endTouch = (e) => { e.preventDefault(); this._touchActive = false; };
-    canvas.addEventListener('touchend',    endTouch, { passive: false });
-    canvas.addEventListener('touchcancel', endTouch, { passive: false });
+    window.addEventListener('touchend',    endTouch, { passive: false, signal: this._inputAbort.signal });
+    window.addEventListener('touchcancel', endTouch, { passive: false, signal: this._inputAbort.signal });
   }
 
   update(bullets, dt) {
@@ -199,6 +201,7 @@ export class Player extends Character {
   dispose() {
     if (this._disposed) return;
     this._disposed = true;
+    this._inputAbort.abort();
     this._scene.remove(this.mesh);
     this.mesh.traverse((obj) => {
       if (obj.geometry) obj.geometry.dispose();

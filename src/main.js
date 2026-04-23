@@ -126,8 +126,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 canvas.addEventListener('mousedown', (e) => handlePointer(e.clientX, e.clientY, false));
-canvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
+window.addEventListener('touchstart', (e) => {
   const t = e.changedTouches[0];
   handlePointer(t.clientX, t.clientY, true);
 }, { passive: false });
