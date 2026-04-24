@@ -81,7 +81,7 @@ export class TankEnemy extends Character {
         const spd  = 2.5 * bulletSpeedMult;
         bullets.push(new Bullet(this._scene,
           this.x, this.y + this.height / 2,
-          (dx / dist) * spd, (dy / dist) * spd, false, 1, 5));
+          (dx / dist) * spd, (dy / dist) * spd, false, 1, 5, 0xff6600));
         this.shootTimer = 95 * fireRateMult;
       }
     }

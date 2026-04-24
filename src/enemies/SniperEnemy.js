@@ -67,7 +67,7 @@ export class SniperEnemy extends Character {
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const spd  = 10 * bulletSpeedMult;
         bullets.push(new Bullet(this._scene, this.x, this.y,
-          (dx / dist) * spd, (dy / dist) * spd, false));
+          (dx / dist) * spd, (dy / dist) * spd, false, 1, 1, 0xffee00));
         this.shootTimer = 90 * fireRateMult;
       }
     }
